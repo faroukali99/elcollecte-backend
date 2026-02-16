@@ -10,6 +10,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -32,8 +33,8 @@ public class CollecteService {
         c.setEnqueteurId(enqueteurId);
         c.setProjetId(req.projetId());
         c.setDonnees(req.donnees());
-        c.setLatitude(req.latitude());
-        c.setLongitude(req.longitude());
+        c.setLatitude(req.latitude() != null ? BigDecimal.valueOf(req.latitude()) : null);
+        c.setLongitude(req.longitude() != null ? BigDecimal.valueOf(req.longitude()) : null);
         c.setStatut(CollecteData.Statut.SOUMIS);
         c.setOffline(false);
 
@@ -53,8 +54,8 @@ public class CollecteService {
                 c.setEnqueteurId(enqueteurId);
                 c.setProjetId(req.projetId());
                 c.setDonnees(req.donnees());
-                c.setLatitude(req.latitude());
-                c.setLongitude(req.longitude());
+                c.setLatitude(req.latitude() != null ? BigDecimal.valueOf(req.latitude()) : null);
+                c.setLongitude(req.longitude() != null ? BigDecimal.valueOf(req.longitude()) : null);
                 c.setStatut(CollecteData.Statut.SOUMIS);
                 c.setOffline(true);
                 c.setCollectedAt(req.collectedAt() != null

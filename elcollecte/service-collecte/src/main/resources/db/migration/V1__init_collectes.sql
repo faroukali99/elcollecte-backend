@@ -1,17 +1,20 @@
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS postgis;
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE collecte_statut AS ENUM ('BROUILLON', 'SOUMIS', 'VALIDE', 'REJETE');
 
 CREATE TABLE collectes (
     id               BIGSERIAL       PRIMARY KEY,
-    uuid             UUID            NOT NULL DEFAULT uuid_generate_v4() UNIQUE,
+    uuid             UUID            NOT NULL DEFAULT gen_random_uuid() UNIQUE,
     formulaire_id    BIGINT          NOT NULL,
     enqueteur_id     BIGINT          NOT NULL,
     projet_id        BIGINT          NOT NULL,
     validateur_id    BIGINT,
     donnees          JSONB           NOT NULL DEFAULT '{}',
-    geolocalisation  GEOMETRY(POINT, 4326),
+    latitude         DECIMAL(10, 7),
+    longitude        DECIMAL(10, 7),
     medias           JSONB           NOT NULL DEFAULT '[]',
     statut           collecte_statut NOT NULL DEFAULT 'SOUMIS',
     is_offline       BOOLEAN         NOT NULL DEFAULT FALSE,
@@ -25,4 +28,4 @@ CREATE INDEX idx_collectes_projet      ON collectes(projet_id);
 CREATE INDEX idx_collectes_enqueteur   ON collectes(enqueteur_id);
 CREATE INDEX idx_collectes_formulaire  ON collectes(formulaire_id);
 CREATE INDEX idx_collectes_statut      ON collectes(statut);
-CREATE INDEX idx_collectes_geo         ON collectes USING GIST(geolocalisation);
+CREATE INDEX idx_collectes_geo         ON collectes(latitude, longitude);

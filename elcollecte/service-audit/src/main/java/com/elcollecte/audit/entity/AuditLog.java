@@ -1,6 +1,10 @@
 package com.elcollecte.audit.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,8 +30,9 @@ public class AuditLog {
     @Column(columnDefinition = "TEXT")
     private String details;
 
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
+    @Column(name = "ip_address")
+    @JdbcTypeCode(SqlTypes.INET)
+    private InetAddress ipAddress;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -43,7 +48,7 @@ public class AuditLog {
     public String        getRessource()    { return ressource; }
     public Long          getRessourceId()  { return ressourceId; }
     public String        getDetails()      { return details; }
-    public String        getIpAddress()    { return ipAddress; }
+    public String        getIpAddress()    { return ipAddress != null ? ipAddress.getHostAddress() : null; }
     public LocalDateTime getCreatedAt()    { return createdAt; }
 
     public void setUserId(Long v)       { this.userId = v; }
@@ -51,5 +56,15 @@ public class AuditLog {
     public void setRessource(String v)  { this.ressource = v; }
     public void setRessourceId(Long v)  { this.ressourceId = v; }
     public void setDetails(String v)    { this.details = v; }
-    public void setIpAddress(String v)  { this.ipAddress = v; }
+    public void setIpAddress(String v)  {
+        if (v == null || v.isBlank()) {
+            this.ipAddress = null;
+            return;
+        }
+        try {
+            this.ipAddress = InetAddress.getByName(v);
+        } catch (Exception e) {
+            this.ipAddress = null;
+        }
+    }
 }
