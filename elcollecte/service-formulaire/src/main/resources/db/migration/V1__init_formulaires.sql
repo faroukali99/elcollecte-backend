@@ -1,5 +1,5 @@
 CREATE TABLE formulaires (
-    id                SERIAL        PRIMARY KEY,
+    id                BIGSERIAL        PRIMARY KEY,
     projet_id         BIGINT        NOT NULL,
     createur_id       BIGINT        NOT NULL,
     titre             VARCHAR(200)  NOT NULL,

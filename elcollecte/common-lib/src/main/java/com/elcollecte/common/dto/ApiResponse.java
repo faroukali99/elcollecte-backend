@@ -1,29 +1,45 @@
 package com.elcollecte.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
 import java.time.LocalDateTime;
 
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    private boolean success;
-    private String message;
-    private T data;
-    private Object errors;
-    @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private boolean       success;
+    private String        message;
+    private T             data;
+    private Object        errors;
+    private LocalDateTime timestamp;
+
+    public ApiResponse() { this.timestamp = LocalDateTime.now(); }
+
+    private ApiResponse(boolean success, String message, T data, Object errors) {
+        this.success = success; this.message = message;
+        this.data = data; this.errors = errors;
+        this.timestamp = LocalDateTime.now();
+    }
 
     public static <T> ApiResponse<T> ok(T data) {
-        return ApiResponse.<T>builder().success(true).data(data).build();
+        return new ApiResponse<>(true, null, data, null);
     }
     public static <T> ApiResponse<T> ok(String msg, T data) {
-        return ApiResponse.<T>builder().success(true).message(msg).data(data).build();
+        return new ApiResponse<>(true, msg, data, null);
     }
     public static <T> ApiResponse<T> error(String msg) {
-        return ApiResponse.<T>builder().success(false).message(msg).build();
+        return new ApiResponse<>(false, msg, null, null);
     }
     public static <T> ApiResponse<T> error(String msg, Object errors) {
-        return ApiResponse.<T>builder().success(false).message(msg).errors(errors).build();
+        return new ApiResponse<>(false, msg, null, errors);
     }
+
+    public boolean isSuccess()    { return success; }
+    public String getMessage()    { return message; }
+    public T getData()            { return data; }
+    public Object getErrors()     { return errors; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setSuccess(boolean v)   { this.success = v; }
+    public void setMessage(String v)    { this.message = v; }
+    public void setData(T v)            { this.data = v; }
+    public void setErrors(Object v)     { this.errors = v; }
+    public void setTimestamp(LocalDateTime v) { this.timestamp = v; }
 }

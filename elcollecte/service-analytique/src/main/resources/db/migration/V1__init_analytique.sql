@@ -4,7 +4,7 @@ CREATE TABLE stats_projets (
     total_collectes      INT        NOT NULL DEFAULT 0,
     collectes_validees   INT        NOT NULL DEFAULT 0,
     collectes_rejetees   INT        NOT NULL DEFAULT 0,
-    collectes_en_attente INT        NOT NULL DEFAULT 0,
+    collectes_en_attente BIGINT        NOT NULL DEFAULT 0,
     nb_enqueteurs_actifs INT        NOT NULL DEFAULT 0,
     taux_validation      NUMERIC(5,2) DEFAULT 0,
     updated_at           TIMESTAMP  NOT NULL DEFAULT NOW()
