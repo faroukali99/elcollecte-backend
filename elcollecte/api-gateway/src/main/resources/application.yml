@@ -1,0 +1,82 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000,http://localhost:5173"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-public
+          uri: lb://service-utilisateur
+          predicates:
+            - Path=/api/auth/**
+        - id: users-service
+          uri: lb://service-utilisateur
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - AuthFilter
+        - id: projets-service
+          uri: lb://service-projet
+          predicates:
+            - Path=/api/projets/**
+          filters:
+            - AuthFilter
+        - id: formulaires-service
+          uri: lb://service-formulaire
+          predicates:
+            - Path=/api/formulaires/**
+          filters:
+            - AuthFilter
+        - id: collectes-service
+          uri: lb://service-collecte
+          predicates:
+            - Path=/api/collectes/**
+          filters:
+            - AuthFilter
+        - id: media-service
+          uri: lb://service-media
+          predicates:
+            - Path=/api/medias/**
+          filters:
+            - AuthFilter
+        - id: validation-service
+          uri: lb://service-validation
+          predicates:
+            - Path=/api/validations/**
+          filters:
+            - AuthFilter
+        - id: analytique-service
+          uri: lb://service-analytique
+          predicates:
+            - Path=/api/analytics/**
+          filters:
+            - AuthFilter
+        - id: rapport-service
+          uri: lb://service-rapport
+          predicates:
+            - Path=/api/rapports/**
+          filters:
+            - AuthFilter
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      password: ${REDIS_PASSWORD:redis123}
+
+jwt:
+  secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+  instance:
+    preferIpAddress: true

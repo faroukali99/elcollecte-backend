@@ -1,0 +1,130 @@
+version: '3.9'
+
+x-common-env: &common-env
+  EUREKA_HOST: service-discovery
+  KAFKA_SERVERS: kafka:29092
+  DB_HOST: postgres
+  DB_PASSWORD: postgres123
+  JWT_SECRET: ${JWT_SECRET:-elcollecte-super-secret-key-2025-change-in-production}
+
+services:
+  service-discovery:
+    build: ./service-discovery
+    container_name: elcollecte-eureka
+    ports: ["8761:8761"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: elcollecte-gateway
+    ports: ["8080:8080"]
+    environment:
+      <<: *common-env
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-utilisateur:
+    build: ./service-utilisateur
+    container_name: elcollecte-users
+    ports: ["8081:8081"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_users
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-projet:
+    build: ./service-projet
+    container_name: elcollecte-projets
+    ports: ["8082:8082"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_projets
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-formulaire:
+    build: ./service-formulaire
+    container_name: elcollecte-formulaires
+    ports: ["8083:8083"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_formulaires
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-collecte:
+    build: ./service-collecte
+    container_name: elcollecte-collectes
+    ports: ["8084:8084"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_collectes
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-media:
+    build: ./service-media
+    container_name: elcollecte-medias
+    ports: ["8085:8085"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_medias
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-validation:
+    build: ./service-validation
+    container_name: elcollecte-validation
+    ports: ["8086:8086"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_validation
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-analytique:
+    build: ./service-analytique
+    container_name: elcollecte-analytics
+    ports: ["8087:8087"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_analytique
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-rapport:
+    build: ./service-rapport
+    container_name: elcollecte-rapports
+    ports: ["8088:8088"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_rapports
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-audit:
+    build: ./service-audit
+    container_name: elcollecte-audit
+    ports: ["8089:8089"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_audit
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  frontend:
+    build: ./frontend
+    container_name: elcollecte-frontend
+    ports: ["3000:80"]
+    depends_on: [api-gateway]

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/elcollecte/infra/init-db.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-projet/src/main/resources/db/migration/V1__init_projets.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/src/main/resources/db/migration/V1__init_users.sql" dialect="GenericSQL" />
+  </component>
+</project>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="service-projet" />
+        <module name="service-media" />
+        <module name="service-audit" />
+        <module name="service-utilisateur" />
+        <module name="service-collecte" />
+        <module name="api-gateway" />
+        <module name="service-validation" />
+        <module name="service-formulaire" />
+        <module name="service-rapport" />
+        <module name="common-lib" />
+        <module name="service-analytique" />
+        <module name="service-discovery" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-gateway" options="-parameters" />
+      <module name="common-lib" options="-parameters" />
+      <module name="elcollecte-parent" options="-parameters" />
+      <module name="service-analytique" options="-parameters" />
+      <module name="service-audit" options="-parameters" />
+      <module name="service-collecte" options="-parameters" />
+      <module name="service-discovery" options="-parameters" />
+      <module name="service-formulaire" options="-parameters" />
+      <module name="service-media" options="-parameters" />
+      <module name="service-projet" options="-parameters" />
+      <module name="service-rapport" options="-parameters" />
+      <module name="service-utilisateur" options="-parameters" />
+      <module name="service-validation" options="-parameters" />
+    </option>
+  </component>
+</project>

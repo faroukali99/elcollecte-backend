@@ -1,0 +1,7 @@
+# Project exclude paths
+/elcollecte/common-lib/target/
+/elcollecte/service-collecte/target/
+/elcollecte/service-discovery/target/
+/elcollecte/service-formulaire/target/
+/elcollecte/service-projet/target/
+/elcollecte/service-utilisateur/target/
