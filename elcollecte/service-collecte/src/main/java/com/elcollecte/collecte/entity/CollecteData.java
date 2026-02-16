@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -37,11 +39,11 @@ public class CollecteData {
     @Column(nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> donnees;
 
-    @Column(name = "latitude")
-    private Double latitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
 
-    @Column(name = "longitude")
-    private Double longitude;
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
@@ -83,8 +85,8 @@ public class CollecteData {
     public Long                  getProjetId()      { return projetId; }
     public Long                  getValidateurId()  { return validateurId; }
     public Map<String, Object>   getDonnees()       { return donnees; }
-    public Double                getLatitude()      { return latitude; }
-    public Double                getLongitude()     { return longitude; }
+    public BigDecimal            getLatitude()      { return latitude; }
+    public BigDecimal            getLongitude()     { return longitude; }
     public Object                getMedias()        { return medias; }
     public Statut                getStatut()        { return statut; }
     public boolean               isOffline()        { return offline; }
@@ -99,8 +101,8 @@ public class CollecteData {
     public void setProjetId(Long v)                 { this.projetId = v; }
     public void setValidateurId(Long v)             { this.validateurId = v; }
     public void setDonnees(Map<String, Object> v)   { this.donnees = v; }
-    public void setLatitude(Double v)               { this.latitude = v; }
-    public void setLongitude(Double v)              { this.longitude = v; }
+    public void setLatitude(BigDecimal v)           { this.latitude = v; }
+    public void setLongitude(BigDecimal v)          { this.longitude = v; }
     public void setMedias(Object v)                 { this.medias = v; }
     public void setStatut(Statut v)                 { this.statut = v; }
     public void setOffline(boolean v)               { this.offline = v; }
