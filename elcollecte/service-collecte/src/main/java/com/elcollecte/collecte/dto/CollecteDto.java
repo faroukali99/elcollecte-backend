@@ -2,6 +2,7 @@ package com.elcollecte.collecte.dto;
 
 import com.elcollecte.collecte.entity.CollecteData;
 import jakarta.validation.constraints.NotNull;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +17,7 @@ public record CollecteDto(
     Long                  enqueteurId,
     Long                  projetId,
     Map<String, Object>   donnees,
-    Double                latitude,
+    Double                 latitude,
     Double                longitude,
     String                statut,
     boolean               offline,
@@ -27,7 +28,9 @@ public record CollecteDto(
         return new CollecteDto(
             c.getId(), c.getUuid(),
             c.getFormulaireId(), c.getEnqueteurId(), c.getProjetId(),
-            c.getDonnees(), c.getLatitude(), c.getLongitude(),
+            c.getDonnees(),
+            c.getLatitude() != null ? c.getLatitude().doubleValue() : null,
+            c.getLongitude() != null ? c.getLongitude().doubleValue() : null,
             c.getStatut().name(), c.isOffline(),
             c.getCollectedAt(), c.getSyncedAt()
         );

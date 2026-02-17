@@ -9,7 +9,3 @@ CREATE DATABASE elcollecte_analytique;
 CREATE DATABASE elcollecte_rapports;
 CREATE DATABASE elcollecte_audit;
 
---Extension postgis
-\c elcollecte_collectes
-CREATE EXTENSION postgis;
-CREATE EXTENSION "uuid-ossp";
