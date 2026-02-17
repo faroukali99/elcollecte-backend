@@ -8,6 +8,8 @@ import com.elcollecte.utilisateur.entity.User;
 import com.elcollecte.utilisateur.repository.OrganisationRepository;
 import com.elcollecte.utilisateur.repository.UserRepository;
 import com.elcollecte.utilisateur.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +29,8 @@ import java.util.Map;
 
 @Service
 public class AuthService implements UserDetailsService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository         userRepository;
     private final OrganisationRepository orgRepository;
@@ -154,12 +158,16 @@ public class AuthService implements UserDetailsService {
 
     private void publishAuditEvent(String action, Long userId,
                                    String ipAddress, String details) {
-        Map<String, Object> event = new HashMap<>();
-        event.put("action",    action);
-        event.put("userId",    userId);
-        event.put("ipAddress", ipAddress);
-        event.put("details",   details);
-        event.put("timestamp", LocalDateTime.now().toString());
-        kafkaTemplate.send("audit.events", event);
+        try {
+            Map<String, Object> event = new HashMap<>();
+            event.put("action",    action);
+            event.put("userId",    userId);
+            event.put("ipAddress", ipAddress);
+            event.put("details",   details);
+            event.put("timestamp", LocalDateTime.now().toString());
+            kafkaTemplate.send("audit.events", event);
+        } catch (Exception e) {
+            log.warn("Impossible d'envoyer l'événement d'audit à Kafka: {}", e.getMessage());
+        }
     }
 }
