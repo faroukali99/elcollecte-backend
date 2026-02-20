@@ -1,7 +1,32 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, User, Mail, Lock, Briefcase } from 'lucide-react';
+import { TextField, Button, CircularProgress, Alert, MenuItem, Select, FormControl, InputLabel, InputAdornment } from '@mui/material';
+import styled from 'styled-components';
+import apiClient from '../api/client';
+
+const RegisterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #3b82f6, #8b5cf6);
+  padding: 1rem;
+`;
+
+const RegisterFormWrapper = styled.div`
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 32rem;
+  transition: transform 0.3s ease-in-out;
+
+  &:hover {
+    transform: scale(1.01);
+  }
+`;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +40,6 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -33,11 +57,7 @@ const Register = () => {
       setIsLoading(false);
       return;
     }
-    if (!/[A-Z]/.test(formData.password)) {
-      setError('Le mot de passe doit contenir au moins une majuscule.');
-      setIsLoading(false);
-      return;
-    }
+    // Validation simplifiée pour l'exemple, à renforcer selon vos besoins
     if (!/[0-9]/.test(formData.password)) {
       setError('Le mot de passe doit contenir au moins un chiffre.');
       setIsLoading(false);
@@ -45,106 +65,127 @@ const Register = () => {
     }
 
     try {
-      await register(formData);
+      // Appel direct à l'API au lieu d'utiliser useAuth
+      await apiClient.post('/auth/register', formData);
+
       setSuccess('Compte créé avec succès ! Redirection...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       console.error("Registration error details:", err);
       const message = err.response?.data?.message || err.message || 'Erreur lors de la création du compte.';
       setError(message);
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
+    <RegisterContainer>
+      <RegisterFormWrapper>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Inscription</h1>
           <p className="text-gray-500">Rejoignez l'équipe ElCollecte</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 text-sm break-words">
+          <Alert severity="error" style={{ marginBottom: '1.5rem' }}>
             {error}
-          </div>
+          </Alert>
         )}
         {success && (
-          <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded mb-6 text-sm">
+          <Alert severity="success" style={{ marginBottom: '1.5rem' }}>
             {success}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-4 w-4 text-gray-400" />
-                </div>
-                <input type="text" name="nom" onChange={handleChange} className="pl-9 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-4 w-4 text-gray-400" />
-                </div>
-                <input type="text" name="prenom" onChange={handleChange} className="pl-9 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required />
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextField
+              label="Nom"
+              name="nom"
+              variant="outlined"
+              fullWidth
+              value={formData.nom}
+              onChange={handleChange}
+              required
+              InputProps={{
+                startAdornment: <User className="h-5 w-5 text-gray-400 mr-2" />,
+              }}
+            />
+            <TextField
+              label="Prénom"
+              name="prenom"
+              variant="outlined"
+              fullWidth
+              value={formData.prenom}
+              onChange={handleChange}
+              required
+              InputProps={{
+                startAdornment: <User className="h-5 w-5 text-gray-400 mr-2" />,
+              }}
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-              <input type="email" name="email" onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required />
-            </div>
-          </div>
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            variant="outlined"
+            fullWidth
+            value={formData.email}
+            onChange={handleChange}
+            required
+            InputProps={{
+              startAdornment: <Mail className="h-5 w-5 text-gray-400 mr-2" />,
+            }}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
-              <input type="password" name="password" onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required />
-            </div>
-            <p className="text-xs text-gray-500 mt-1 ml-1">Min. 8 caractères, 1 majuscule, 1 chiffre.</p>
-          </div>
+          <TextField
+            label="Mot de passe"
+            name="password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            value={formData.password}
+            onChange={handleChange}
+            required
+            helperText="Min. 8 caractères, 1 chiffre."
+            InputProps={{
+              startAdornment: <Lock className="h-5 w-5 text-gray-400 mr-2" />,
+            }}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Briefcase className="h-5 w-5 text-gray-400" />
-              </div>
-              <select name="role" value={formData.role} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
-                <option value="ENQUETEUR">Enquêteur</option>
-                <option value="CHEF_PROJET">Chef de Projet</option>
-                <option value="ANALYSTE">Analyste</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-          </div>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel>Rôle</InputLabel>
+            <Select
+              label="Rôle"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Briefcase className="h-5 w-5 text-gray-400" />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="ENQUETEUR">Enquêteur</MenuItem>
+              <MenuItem value="CHEF_PROJET">Chef de Projet</MenuItem>
+              <MenuItem value="ANALYSTE">Analyste</MenuItem>
+              <MenuItem value="ADMIN">Admin</MenuItem>
+            </Select>
+          </FormControl>
 
-          <button
+          <Button
             type="submit"
+            variant="contained"
+            fullWidth
             disabled={isLoading}
-            className={`w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg mt-4 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            size="large"
+            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <UserPlus />}
+            sx={{ mt: 2 }}
           >
-            {isLoading ? 'Création...' : (
-              <>
-                <UserPlus size={20} />
-                S'inscrire
-              </>
-            )}
-          </button>
+            {isLoading ? 'Création...' : "S'inscrire"}
+          </Button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
@@ -153,8 +194,8 @@ const Register = () => {
             Se connecter
           </Link>
         </div>
-      </div>
-    </div>
+      </RegisterFormWrapper>
+    </RegisterContainer>
   );
 };
 

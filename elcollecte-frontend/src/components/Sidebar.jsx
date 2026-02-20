@@ -8,93 +8,183 @@ import {
   CheckCircle2,
   LogOut,
   Settings,
-  PieChart
+  PieChart,
 } from 'lucide-react';
-import { logout } from '../features/auth/authSlice'; // Import de l'action logout
+import { logout } from '../features/auth/authSlice';
+
+const NAV = [
+  { name: 'Tableau de bord', href: '/',           icon: LayoutDashboard },
+  { name: 'Mes Projets',     href: '/projets',     icon: FolderKanban    },
+  { name: 'Collectes',       href: '/collecte',    icon: ClipboardList   },
+  { name: 'Validation',      href: '/validation',  icon: CheckCircle2    },
+  { name: 'Analytique',      href: '/analytics',   icon: PieChart        },
+];
+
+const SYSTEM = [
+  { name: 'Paramètres', href: '/settings', icon: Settings },
+];
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const dispatch = useDispatch(); // Utilisation de useDispatch
-
-  const navigation = [
-    { name: 'Tableau de bord', href: '/', icon: LayoutDashboard },
-    { name: 'Mes Projets', href: '/projets', icon: FolderKanban },
-    { name: 'Collectes', href: '/collecte', icon: ClipboardList },
-    { name: 'Validation', href: '/validation', icon: CheckCircle2 },
-    { name: 'Analytique', href: '/analytics', icon: PieChart },
-  ];
+  const location  = useLocation();
+  const navigate  = useNavigate();
+  const dispatch  = useDispatch();
 
   const handleLogout = () => {
-    dispatch(logout()); // Dispatch de l'action logout
+    dispatch(logout());
     navigate('/login');
+  };
+
+  const NavLink = ({ item }) => {
+    const active = location.pathname === item.href;
+    const Icon   = item.icon;
+    return (
+      <Link
+        to={item.href}
+        onClick={closeSidebar}
+        style={{ position: 'relative', textDecoration: 'none' }}
+        className={active ? 'nav-item-active' : ''}
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 14px',
+          borderRadius: 8,
+          margin: '1px 0',
+          fontSize: '0.875rem', fontWeight: 500,
+          transition: 'background 0.18s, color 0.18s',
+          background: active ? 'rgba(37,99,235,0.15)' : 'transparent',
+          color: active ? '#93c5fd' : 'rgba(255,255,255,0.55)',
+          cursor: 'pointer',
+        }}
+          onMouseEnter={e => {
+            if (!active) {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.85)';
+            }
+          }}
+          onMouseLeave={e => {
+            if (!active) {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+            }
+          }}
+        >
+          <Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
+          <span>{item.name}</span>
+          {active && (
+            <div style={{
+              position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#3b82f6',
+              boxShadow: '0 0 6px #3b82f6',
+            }} />
+          )}
+        </div>
+      </Link>
+    );
   };
 
   return (
     <>
-      {/* Overlay mobile */}
+      {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-gray-900/50 z-20 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={closeSidebar}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 20,
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(4px)',
+            transition: 'opacity 0.3s',
+          }}
         />
       )}
 
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-30 w-72 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out flex flex-col
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        {/* Logo Area */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <ClipboardList className="text-white w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">ElCollecte</span>
+      <aside style={{
+        position: 'fixed',
+        inset: '0 auto 0 0',
+        zIndex: 30,
+        width: 240,
+        background: '#0f1117',
+        display: 'flex',
+        flexDirection: 'column',
+        transform: isOpen ? 'translateX(0)' : undefined,
+        transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
+        className={`${!isOpen ? '-translate-x-full lg:translate-x-0' : ''}`}
+      >
+        {/* Logo */}
+        <div style={{
+          height: 64, display: 'flex', alignItems: 'center',
+          padding: '0 20px', gap: 10,
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(37,99,235,0.4)',
+          }}>
+            <ClipboardList size={16} color="#fff" strokeWidth={2.5} />
           </div>
+          <span style={{
+            fontWeight: 700, fontSize: '1rem',
+            color: '#fff', letterSpacing: '-0.02em',
+          }}>
+            ElCollecte
+          </span>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Principal</p>
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={closeSidebar}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                  ${isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
-                `}
-              >
-                <Icon size={18} />
-                {item.name}
-              </Link>
-            );
-          })}
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '16px 10px', overflowY: 'auto' }}>
+          <div style={{ marginBottom: 8 }}>
+            <p style={{
+              fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)',
+              padding: '0 14px', marginBottom: 4,
+            }}>
+              Navigation
+            </p>
+            {NAV.map(item => <NavLink key={item.href} item={item} />)}
+          </div>
 
-          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-8 mb-2">Système</p>
-          <Link
-            to="/settings"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <Settings size={18} />
-            Paramètres
-          </Link>
+          <div style={{ marginTop: 24 }}>
+            <p style={{
+              fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)',
+              padding: '0 14px', marginBottom: 4,
+            }}>
+              Système
+            </p>
+            {SYSTEM.map(item => <NavLink key={item.href} item={item} />)}
+          </div>
         </nav>
 
-        {/* Footer Sidebar */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950">
+        {/* Logout */}
+        <div style={{
+          padding: '12px 10px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px', border: 'none', borderRadius: 8,
+              background: 'transparent', cursor: 'pointer',
+              fontSize: '0.875rem', fontWeight: 500,
+              color: 'rgba(248,113,113,0.7)',
+              transition: 'background 0.18s, color 0.18s',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(239,68,68,0.1)';
+              e.currentTarget.style.color = '#f87171';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'rgba(248,113,113,0.7)';
+            }}
           >
-            <LogOut size={18} />
+            <LogOut size={16} strokeWidth={1.8} />
             Se déconnecter
           </button>
         </div>

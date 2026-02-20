@@ -1,12 +1,12 @@
 CREATE TABLE stats_projets (
     id                   BIGSERIAL  PRIMARY KEY,
     projet_id            BIGINT     NOT NULL UNIQUE,
-    total_collectes      INT        NOT NULL DEFAULT 0,
-    collectes_validees   INT        NOT NULL DEFAULT 0,
-    collectes_rejetees   INT        NOT NULL DEFAULT 0,
-    collectes_en_attente INT        NOT NULL DEFAULT 0,
+    total_collectes      BIGINT        NOT NULL DEFAULT 0,
+    collectes_validees   BIGINT        NOT NULL DEFAULT 0,
+    collectes_rejetees   BIGINT        NOT NULL DEFAULT 0,
+    collectes_en_attente BIGINT        NOT NULL DEFAULT 0,
     nb_enqueteurs_actifs INT        NOT NULL DEFAULT 0,
-    taux_validation      NUMERIC(5,2) DEFAULT 0,
+    taux_validation      FLOAT DEFAULT 0,
     updated_at           TIMESTAMP  NOT NULL DEFAULT NOW()
 );
 

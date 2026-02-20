@@ -8,25 +8,40 @@ const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div style={{ minHeight: '100vh', background: 'var(--c-bg)', display: 'flex', flexDirection: 'column' }}>
       <OfflineBanner />
-
-      <div className="flex flex-1 h-screen overflow-hidden">
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: '100vh' }}>
         <Sidebar
           isOpen={isSidebarOpen}
           closeSidebar={() => setIsSidebarOpen(false)}
         />
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Main content — offset by sidebar width on desktop */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          minWidth: 0, overflow: 'hidden',
+          marginLeft: 240,  /* sidebar width */
+        }}
+          className="layout-main"
+        >
           <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scroll-smooth">
-            <div className="max-w-7xl mx-auto">
+          <main style={{
+            flex: 1, overflowY: 'auto',
+            padding: '0 28px 40px',
+          }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto' }}>
               <Outlet />
             </div>
           </main>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 1024px) {
+          .layout-main { margin-left: 0 !important; }
+        }
+      `}</style>
     </div>
   );
 };

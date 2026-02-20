@@ -1,73 +1,102 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { Card, CardContent, Typography, Box, Avatar } from '@mui/material';
-import styled from 'styled-components';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-// Styled Card pour ajouter un effet de survol
-const StyledCard = styled(Card)`
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  }
-`;
+/**
+ * KpiCard — redesigned
+ * Props:
+ *   title    : string
+ *   value    : string | number
+ *   icon     : LucideIcon component
+ *   color    : 'blue' | 'green' | 'violet' | 'amber'
+ *   trend    : string  (e.g. "+12.5%")
+ *   trendUp  : boolean
+ *   delay    : number  (ms, animation stagger)
+ */
 
-const KpiCard = ({ title, value, icon: Icon, color, trend, trendUp }) => {
-  // Mapping des couleurs Tailwind vers les couleurs Material UI ou des codes hexadécimaux
-  const colorMap = {
-    'bg-blue-600': { main: '#2563eb', light: '#e0f2fe' }, // blue-600
-    'bg-emerald-500': { main: '#10b981', light: '#e6fffa' }, // emerald-500
-    'bg-violet-500': { main: '#8b5cf6', light: '#f3e8ff' }, // violet-500
-    'bg-amber-500': { main: '#f59e0b', light: '#fffbeb' }, // amber-500
-  };
+const PALETTE = {
+  blue:   { bg: '#dbeafe', text: '#1d4ed8', accent: '#2563eb' },
+  green:  { bg: '#d1fae5', text: '#065f46', accent: '#059669' },
+  violet: { bg: '#ede9fe', text: '#5b21b6', accent: '#7c3aed' },
+  amber:  { bg: '#fef3c7', text: '#92400e', accent: '#d97706' },
+};
 
-  const selectedColor = colorMap[color] || { main: '#6b7280', light: '#f3f4f6' }; // Default to gray
+// Map legacy Tailwind class names → palette key
+const LEGACY_MAP = {
+  'bg-blue-600':   'blue',
+  'bg-emerald-500':'green',
+  'bg-violet-500': 'violet',
+  'bg-amber-500':  'amber',
+};
+
+const KpiCard = ({ title, value, icon: Icon, color = 'blue', trend, trendUp, delay = 0 }) => {
+  const key = LEGACY_MAP[color] ?? color;
+  const palette = PALETTE[key] ?? PALETTE.blue;
 
   return (
-    <StyledCard sx={{ borderRadius: '1rem', border: '1px solid #e5e7eb' }}>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Avatar sx={{
-            bgcolor: selectedColor.light,
-            color: selectedColor.main,
-            width: 48,
-            height: 48,
-            transition: 'transform 0.3s ease-in-out',
-            '&:hover': {
-              transform: 'scale(1.1)',
-            }
+    <div
+      className="animate-fade-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="card" style={{ padding: '22px 24px' }}>
+        {/* Top row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          {/* Icon bubble */}
+          <div style={{
+            width: 44, height: 44, borderRadius: 12,
+            background: palette.bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: palette.accent,
+            flexShrink: 0,
           }}>
-            {Icon && <Icon size={24} />}
-          </Avatar>
-          {trend && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                fontSize: '0.75rem', // text-xs
-                fontWeight: 'medium',
-                px: 1,
-                py: 0.5,
-                borderRadius: '9999px', // rounded-full
-                bgcolor: trendUp ? '#dcfce7' : '#fee2e2', // bg-green-50 / bg-red-50
-                color: trendUp ? '#16a34a' : '#dc2626', // text-green-700 / text-red-700
-              }}
-            >
-              {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-              {trend}
-            </Box>
-          )}
-        </Box>
+            {Icon && <Icon size={20} strokeWidth={2} />}
+          </div>
 
-        <Typography variant="h4" component="div" fontWeight="bold" sx={{ mt: 1, color: 'text.primary' }}>
+          {/* Trend badge */}
+          {trend && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              padding: '3px 8px', borderRadius: 99,
+              fontSize: '0.72rem', fontWeight: 700,
+              background: trendUp ? '#d1fae5' : '#fee2e2',
+              color: trendUp ? '#065f46' : '#991b1b',
+            }}>
+              {trendUp
+                ? <TrendingUp size={11} />
+                : <TrendingDown size={11} />
+              }
+              {trend}
+            </span>
+          )}
+        </div>
+
+        {/* Value */}
+        <div
+          className="animate-count"
+          style={{
+            animationDelay: `${delay + 80}ms`,
+            fontSize: '1.75rem', fontWeight: 700,
+            color: 'var(--c-ink)', lineHeight: 1,
+            marginBottom: 6,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
           {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        </div>
+
+        {/* Title */}
+        <div style={{ fontSize: '0.8rem', color: 'var(--c-ink-2)', fontWeight: 500 }}>
           {title}
-        </Typography>
-      </CardContent>
-    </StyledCard>
+        </div>
+
+        {/* Accent stripe */}
+        <div style={{
+          height: 3, borderRadius: 99,
+          background: palette.accent,
+          opacity: 0.25,
+          marginTop: 16,
+        }} />
+      </div>
+    </div>
   );
 };
 

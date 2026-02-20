@@ -1,38 +1,5 @@
 import { useState, useEffect } from 'react';
-
-// Fonctions pour générer des données simulées
-const generateRandomStats = (period) => {
-  const multiplier = period === 'week' ? 0.25 : period === 'month' ? 1 : 4;
-  return {
-    totalCollectes: Math.floor((Math.random() * 200 + 800) * multiplier),
-    projetsActifs: Math.floor(Math.random() * 5) + 10,
-    validationRate: parseFloat((Math.random() * 5 + 90).toFixed(1)),
-    usersActifs: Math.floor((Math.random() * 20 + 50) * multiplier),
-  };
-};
-
-const generateChartData = (period) => {
-  const points = period === 'week' ? 7 : period === 'month' ? 30 : 12;
-  const labels = period === 'week'
-    ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-    : period === 'month'
-    ? Array.from({ length: 30 }, (_, i) => `${i + 1}`)
-    : ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-
-  return labels.map(label => ({
-    name: label,
-    value: Math.floor(Math.random() * 100) + 10,
-  }));
-};
-
-const generateRecentProjects = () => [
-  { id: 1, name: 'Collecte Zone Nord', lead: 'Alice Martin', status: 'En cours', progress: Math.floor(Math.random() * 40) + 40 },
-  { id: 2, name: 'Recyclage Plastique', lead: 'Bob Dupont', status: 'Terminé', progress: 100 },
-  { id: 3, name: 'Sensibilisation Écoles', lead: 'Charlie Durand', status: 'En attente', progress: Math.floor(Math.random() * 20) },
-  { id: 4, name: 'Nettoyage Plage', lead: 'David Leroy', status: 'En cours', progress: Math.floor(Math.random() * 50) + 20 },
-  { id: 5, name: 'Compostage Quartier Sud', lead: 'Eve Moreau', status: 'Planifié', progress: 0 },
-];
-
+import client from '../api/client';
 
 export const useDashboardData = (period = 'month') => {
   const [stats, setStats] = useState({
@@ -41,32 +8,89 @@ export const useDashboardData = (period = 'month') => {
     validationRate: 0,
     usersActifs: 0,
   });
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData]       = useState([]);
   const [recentProjects, setRecentProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchAll = async () => {
       setLoading(true);
+      setError(null);
       try {
-        // Simuler une latence réseau
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 1. KPIs depuis service-analytique
+        const { data: dash } = await client.get('/analytics/dashboard');
+        setStats({
+          totalCollectes:  dash.totalCollectes  ?? 0,
+          projetsActifs:   dash.projetsActifs   ?? 0,
+          validationRate:  dash.tauxValidation  ?? 0,
+          usersActifs:     dash.usersActifs     ?? 0,
+        });
 
-        // Générer des données simulées basées sur la période
-        setStats(generateRandomStats(period));
-        setChartData(generateChartData(period));
-        setRecentProjects(generateRecentProjects());
+        // 2. Timeline (graphique barres)
+        const days = period === 'week' ? 7 : period === 'month' ? 30 : 365;
+        const { data: timeline } = await client.get(
+          `/analytics/timeline?days=${days}`
+        );
+        // Normalise en { name, value }
+        const chartFormatted = Array.isArray(timeline)
+          ? timeline.map(item => ({
+              name:  item.dateJour ?? item.date ?? item.name,
+              value: item.nbCollectes ?? item.value ?? 0,
+            }))
+          : [];
+        setChartData(chartFormatted);
 
-        setLoading(false);
+        // 3. Projets récents depuis service-projet
+        const { data: projetsPage } = await client.get(
+          '/projets?page=0&size=5'
+        );
+        const projets = projetsPage.content ?? projetsPage ?? [];
+        const projectsMapped = projets.map(p => ({
+          id:       p.id,
+          name:     p.titre,
+          lead:     `Chef #${p.chefProjetId}`,
+          status:   mapStatut(p.statut),
+          progress: estimateProgress(p.statut),
+        }));
+        setRecentProjects(projectsMapped);
+
       } catch (err) {
+        console.error('[useDashboardData]', err);
         setError(err);
+        // Fallback sur données vides plutôt que crash
+        setStats({ totalCollectes: 0, projetsActifs: 0, validationRate: 0, usersActifs: 0 });
+        setChartData([]);
+        setRecentProjects([]);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, [period]); // <-- Le hook se ré-exécutera à chaque changement de 'period'
+    fetchAll();
+  }, [period]);
 
   return { stats, chartData, recentProjects, loading, error };
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function mapStatut(statut) {
+  const map = {
+    ACTIF:     'En cours',
+    BROUILLON: 'En attente',
+    SUSPENDU:  'Annulé',
+    TERMINE:   'Terminé',
+  };
+  return map[statut] ?? statut ?? 'Inconnu';
+}
+
+function estimateProgress(statut) {
+  const map = {
+    BROUILLON: 5,
+    ACTIF:     50,
+    SUSPENDU:  30,
+    TERMINE:   100,
+  };
+  return map[statut] ?? 0;
+}
