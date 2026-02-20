@@ -1,9 +1,9 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Search, Bell, HelpCircle, Menu } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 const Header = ({ toggleSidebar }) => {
-  const { user } = useAuth();
+  const { user } = useSelector((state) => state.auth); // Utilisation de useSelector
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-20">

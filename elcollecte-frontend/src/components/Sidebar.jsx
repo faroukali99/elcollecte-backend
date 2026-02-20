@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -9,23 +10,23 @@ import {
   Settings,
   PieChart
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { logout } from '../features/auth/authSlice'; // Import de l'action logout
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const dispatch = useDispatch(); // Utilisation de useDispatch
 
   const navigation = [
     { name: 'Tableau de bord', href: '/', icon: LayoutDashboard },
     { name: 'Mes Projets', href: '/projets', icon: FolderKanban },
     { name: 'Collectes', href: '/collecte', icon: ClipboardList },
     { name: 'Validation', href: '/validation', icon: CheckCircle2 },
-    { name: 'Analytique', href: '/analytics', icon: PieChart }, // Nouveau lien
+    { name: 'Analytique', href: '/analytics', icon: PieChart },
   ];
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout()); // Dispatch de l'action logout
     navigate('/login');
   };
 

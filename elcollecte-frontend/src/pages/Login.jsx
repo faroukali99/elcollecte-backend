@@ -1,14 +1,41 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import { TextField, Button, CircularProgress, Alert } from '@mui/material';
+import styled from 'styled-components';
+import { loginSuccess } from '../features/auth/authSlice';
+import apiClient from '../api/client'; // Import de votre client API
+
+const LoginContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #3b82f6, #8b5cf6);
+  padding: 1rem;
+`;
+
+const LoginFormWrapper = styled.div`
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 28rem;
+  transition: transform 0.3s ease-in-out;
+
+  &:hover {
+    transform: scale(1.01);
+  }
+`;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,76 +44,79 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      const response = await apiClient.post('/auth/login', { email, password });
+
+      // **Correction : Adapter à la réponse réelle du backend**
+      const { token, user } = response.data;
+
+      if (!token || !user) {
+        throw new Error("Réponse de l'API invalide : token ou utilisateur manquant.");
+      }
+
+      localStorage.setItem('token', token);
+
+      dispatch(loginSuccess({ user, token }));
+
       navigate('/');
+
     } catch (err) {
-      setError('Identifiants incorrects ou problème de connexion.');
+      const errorMessage = err.response?.data?.message || err.message || 'Identifiants incorrects ou problème de connexion.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
+    <LoginContainer>
+      <LoginFormWrapper>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Bienvenue</h1>
           <p className="text-gray-500">Connectez-vous à ElCollecte</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 text-sm">
+          <Alert severity="error" style={{ marginBottom: '1.5rem' }}>
             {error}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="votre@email.com"
-                required
-              />
-            </div>
-          </div>
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            InputProps={{
+              startAdornment: <Mail className="h-5 w-5 text-gray-400 mr-3" />,
+            }}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-          </div>
+          <TextField
+            label="Mot de passe"
+            type="password"
+            variant="outlined"
+            fullWidth
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            InputProps={{
+              startAdornment: <Lock className="h-5 w-5 text-gray-400 mr-3" />,
+            }}
+          />
 
-          <button
+          <Button
             type="submit"
+            variant="contained"
+            fullWidth
             disabled={isLoading}
-            className={`w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            size="large"
+            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <LogIn />}
           >
-            {isLoading ? 'Connexion...' : (
-              <>
-                <LogIn size={20} />
-                Se connecter
-              </>
-            )}
-          </button>
+            {isLoading ? 'Connexion...' : 'Se connecter'}
+          </Button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
@@ -95,8 +125,8 @@ const Login = () => {
             Créer un compte
           </Link>
         </div>
-      </div>
-    </div>
+      </LoginFormWrapper>
+    </LoginContainer>
   );
 };
 
