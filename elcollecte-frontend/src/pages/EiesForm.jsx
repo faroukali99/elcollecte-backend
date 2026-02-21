@@ -29,7 +29,7 @@ const TYPES_PROJET = [
   'Infrastructure routière', 'Infrastructure hydraulique',
   'Industrie extractive', 'Industrie manufacturière',
   'Agriculture & agro-industrie', 'Énergie',
-  'Urbanisme & habitat', 'Tourisme', 'Autre',
+  'Urbanisme & habitat', 'Tourisme', 'Autres',
 ];
 
 const OUI_NON = ['OUI', 'NON', 'PARTIEL'];
@@ -330,7 +330,7 @@ const SectionB = ({ data, onChange, erreurs }) => (
 // ── Section C : Impacts environnementaux ─────────────────────────────────────
 const SectionC = ({ data, onChange, erreurs }) => {
   const impacts = [
-    { key: 'impactFaune',   label: 'Impact sur la faune',          Icon: Trees,    note: 'Présence d'espèces protégées ?' },
+    { key: 'impactFaune',   label: 'Impact sur la faune',          Icon: Trees,    note: 'Présence d\'espèces protégées ?' },
     { key: 'impactFlore',   label: 'Impact sur la flore',          Icon: Leaf,     note: 'Déforestation, destruction végétale ?' },
     { key: 'impactEau',     label: 'Impact sur les eaux',          Icon: Droplets, note: 'Pollution, prélèvement excessif ?' },
     { key: 'impactAir',     label: 'Impact sur la qualité de l\'air', Icon: Wind,  note: 'Émissions, poussières, gaz ?' },

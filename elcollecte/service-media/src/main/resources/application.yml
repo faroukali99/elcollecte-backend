@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/elcollecte_medias
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres123}
+    password: ${DB_PASSWORD:2005}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -29,7 +29,11 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.elcollecte.*"
-  minio:\n    url: ${MINIO_URL:http://localhost:9000}\n    access-key: ${MINIO_ACCESS_KEY:minioadmin}\n    secret-key: ${MINIO_SECRET_KEY:minioadmin123}\n    bucket: elcollecte-medias\n
+  minio:
+    url: ${MINIO_URL:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+    bucket: elcollecte-medias\n
 jwt:
   secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}
 

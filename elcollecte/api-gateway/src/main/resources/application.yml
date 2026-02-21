@@ -6,63 +6,99 @@ spring:
   cloud:
     gateway:
       routes:
+        # ── Auth (public — no AuthFilter) ──────────────────────────────────
         - id: auth-public
           uri: lb://service-utilisateur
           predicates:
             - Path=/api/auth/**
+
+        # ── Users ──────────────────────────────────────────────────────────
         - id: users-service
           uri: lb://service-utilisateur
           predicates:
             - Path=/api/users/**
           filters:
             - AuthFilter
+
+        # ── Projets ────────────────────────────────────────────────────────
         - id: projets-service
           uri: lb://service-projet
           predicates:
             - Path=/api/projets/**
           filters:
             - AuthFilter
+
+        # ── Formulaires EIES (service-formulaire-eies sur port 8091) ───────
         - id: formulaires-service
-          uri: lb://service-formulaire
+          uri: lb://service-formulaire-eies
           predicates:
             - Path=/api/formulaires/**
           filters:
             - AuthFilter
+
+        # ── Collectes ──────────────────────────────────────────────────────
         - id: collectes-service
           uri: lb://service-collecte
           predicates:
             - Path=/api/collectes/**
           filters:
             - AuthFilter
+
+        # ── Médias ─────────────────────────────────────────────────────────
         - id: media-service
           uri: lb://service-media
           predicates:
             - Path=/api/medias/**
           filters:
             - AuthFilter
+
+        # ── Validation (health public, reste protégé) ───────────────────────
+        - id: validation-health
+          uri: lb://service-validation
+          predicates:
+            - Path=/api/validations/health
+
         - id: validation-service
           uri: lb://service-validation
           predicates:
             - Path=/api/validations/**
           filters:
             - AuthFilter
+
+        # ── Analytique ─────────────────────────────────────────────────────
         - id: analytique-service
           uri: lb://service-analytique
           predicates:
             - Path=/api/analytics/**
           filters:
             - AuthFilter
+
+        # ── Rapports ───────────────────────────────────────────────────────
         - id: rapport-service
           uri: lb://service-rapport
           predicates:
             - Path=/api/rapports/**
           filters:
             - AuthFilter
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: 6379
-      password: ${REDIS_PASSWORD:redis123}
+
+        # ── Service Formulaires EIES (port 8091) ────────────────────────────────
+        - id: formulaires-eies-service
+          uri: lb://service-formulaire-eies     # correspond à spring.application.name dans service-formulaire
+          predicates:
+            - Path=/api/formulaires/**
+          filters:
+            - AuthFilter
+
+        # ── Service Validation (port 8090) ──────────────────────────────────────
+        # Remplace la route "validation-service" existante (qui pointe vers 8086)
+        # car le service-validation écoute sur 8090 et se nomme "service-validation"
+        - id: validation-service
+          uri: lb://service-validation
+          predicates:
+            - Path=/api/validations/**
+          filters:
+            - AuthFilter
+
 
 jwt:
   secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}

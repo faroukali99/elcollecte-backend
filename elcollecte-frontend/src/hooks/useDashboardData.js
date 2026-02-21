@@ -1,73 +1,88 @@
 import { useState, useEffect } from 'react';
-import client from '../api/client';
+import analytiqueApi from '../api/analytiqueApi';
+import projetsApi    from '../api/projetsApi';
 
+/**
+ * Hook pour charger toutes les données du tableau de bord.
+ * Utilise les services API typés plutôt que client.get() direct.
+ *
+ * @param {'week'|'month'|'year'} period
+ */
 export const useDashboardData = (period = 'month') => {
   const [stats, setStats] = useState({
     totalCollectes: 0,
-    projetsActifs: 0,
+    projetsActifs:  0,
     validationRate: 0,
-    usersActifs: 0,
+    usersActifs:    0,
+    collectesAujourdhui: 0,
   });
-  const [chartData, setChartData]       = useState([]);
-  const [recentProjects, setRecentProjects] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(null);
+  const [chartData,       setChartData]       = useState([]);
+  const [recentProjects,  setRecentProjects]   = useState([]);
+  const [loading,         setLoading]          = useState(true);
+  const [error,           setError]            = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchAll = async () => {
       setLoading(true);
       setError(null);
+
       try {
-        // 1. KPIs depuis service-analytique
-        const { data: dash } = await client.get('/analytics/dashboard');
-        setStats({
-          totalCollectes:  dash.totalCollectes  ?? 0,
-          projetsActifs:   dash.projetsActifs   ?? 0,
-          validationRate:  dash.tauxValidation  ?? 0,
-          usersActifs:     dash.usersActifs     ?? 0,
-        });
-
-        // 2. Timeline (graphique barres)
+        // Requêtes parallèles pour la performance
         const days = period === 'week' ? 7 : period === 'month' ? 30 : 365;
-        const { data: timeline } = await client.get(
-          `/analytics/timeline?days=${days}`
-        );
-        // Normalise en { name, value }
-        const chartFormatted = Array.isArray(timeline)
-          ? timeline.map(item => ({
-              name:  item.dateJour ?? item.date ?? item.name,
-              value: item.nbCollectes ?? item.value ?? 0,
-            }))
-          : [];
-        setChartData(chartFormatted);
 
-        // 3. Projets récents depuis service-projet
-        const { data: projetsPage } = await client.get(
-          '/projets?page=0&size=5'
-        );
-        const projets = projetsPage.content ?? projetsPage ?? [];
-        const projectsMapped = projets.map(p => ({
-          id:       p.id,
-          name:     p.titre,
-          lead:     `Chef #${p.chefProjetId}`,
-          status:   mapStatut(p.statut),
-          progress: estimateProgress(p.statut),
-        }));
-        setRecentProjects(projectsMapped);
+        const [dashboard, timeline, projetsPage] = await Promise.allSettled([
+          analytiqueApi.getDashboard(),
+          analytiqueApi.getGlobalTimeline(days),
+          projetsApi.list(0, 5),
+        ]);
+
+        if (cancelled) return;
+
+        // ── Dashboard KPIs ──────────────────────────────────────────────────
+        if (dashboard.status === 'fulfilled') {
+          const d = dashboard.value;
+          setStats({
+            totalCollectes:      d.totalCollectes      ?? 0,
+            projetsActifs:       d.projetsActifs        ?? 0,
+            validationRate:      d.tauxValidation       ?? 0,
+            usersActifs:         d.usersActifs          ?? 0, // non fourni par le backend actuel
+            collectesAujourdhui: d.collectesAujourdhui ?? 0,
+          });
+        }
+
+        // ── Timeline (graphique barres) ─────────────────────────────────────
+        if (timeline.status === 'fulfilled') {
+          setChartData(timeline.value);
+        }
+
+        // ── Projets récents ─────────────────────────────────────────────────
+        if (projetsPage.status === 'fulfilled') {
+          const projets = projetsPage.value.content ?? projetsPage.value ?? [];
+          setRecentProjects(
+              projets.map(p => ({
+                id:       p.id,
+                name:     p.titre,
+                lead:     p.chefProjetId ? `Chef #${p.chefProjetId}` : '—',
+                status:   mapStatut(p.statut),
+                progress: estimateProgress(p.statut),
+              }))
+          );
+        }
 
       } catch (err) {
-        console.error('[useDashboardData]', err);
-        setError(err);
-        // Fallback sur données vides plutôt que crash
-        setStats({ totalCollectes: 0, projetsActifs: 0, validationRate: 0, usersActifs: 0 });
-        setChartData([]);
-        setRecentProjects([]);
+        if (!cancelled) {
+          console.error('[useDashboardData]', err);
+          setError(err);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchAll();
+    return () => { cancelled = true; };
   }, [period]);
 
   return { stats, chartData, recentProjects, loading, error };

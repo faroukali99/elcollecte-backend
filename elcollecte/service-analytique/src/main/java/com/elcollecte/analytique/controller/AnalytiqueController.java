@@ -20,10 +20,11 @@ public class AnalytiqueController {
     }
 
     /**
-     * Tableau de bord global (admin / coordinateur)
+     * Dashboard global — accessible à tous les rôles authentifiés.
+     * Les données sont filtrées côté service selon le rôle/orgId.
      */
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATEUR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getDashboard(
             @RequestHeader(value = "X-Org-Id",    required = false) Long orgId,
             @RequestHeader(value = "X-User-Id",   required = false) Long userId,
@@ -35,17 +36,16 @@ public class AnalytiqueController {
      * Stats d'un projet spécifique
      */
     @GetMapping("/projets/{projetId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATEUR', 'SUPERVISEUR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<StatsProjet> getStatsByProjet(@PathVariable Long projetId) {
         return ResponseEntity.ok(statsService.getByProjet(projetId));
     }
 
     /**
-     * Timeline (courbe journalière) d'un projet
-     * @param days  nombre de jours en arrière (défaut : 30)
+     * Timeline d'un projet
      */
     @GetMapping("/projets/{projetId}/timeline")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATEUR', 'SUPERVISEUR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> getTimeline(
             @PathVariable Long projetId,
             @RequestParam(defaultValue = "30") int days) {
@@ -53,10 +53,10 @@ public class AnalytiqueController {
     }
 
     /**
-     * Timeline globale toutes projets confondus
+     * Timeline globale
      */
     @GetMapping("/timeline")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATEUR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> getGlobalTimeline(
             @RequestParam(defaultValue = "30") int days) {
         return ResponseEntity.ok(statsService.getTimeline(null, days));

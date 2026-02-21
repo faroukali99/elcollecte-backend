@@ -27,21 +27,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/**", "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(gatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class);
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**", "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(gatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Lit les headers X-User-Id / X-User-Role injectés par l'API Gateway
-     * et construit un SecurityContext sans re-valider le JWT.
-     */
     @Bean
     public OncePerRequestFilter gatewayHeaderFilter() {
         return new OncePerRequestFilter() {
