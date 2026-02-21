@@ -1,13 +1,13 @@
 server:
-  port: 8083
+  port: 8091
 
 spring:
   application:
-    name: service-formulaire
+    name: service-formulaire-eies
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/elcollecte_formulaires
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/elcollecte_formulaires_eies
     username: postgres
-    password: 2005
+    password: ${DB_PASSWORD:2005}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -23,13 +23,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: service-formulaire
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.elcollecte.*"
 
 jwt:
   secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}

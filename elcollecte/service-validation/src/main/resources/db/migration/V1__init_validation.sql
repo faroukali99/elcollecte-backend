@@ -1,17 +1,16 @@
-CREATE TYPE validation_statut AS ENUM ('EN_ATTENTE', 'VALIDE', 'REJETE', 'REVISION');
-
-CREATE TABLE validations (
-    id            BIGSERIAL          PRIMARY KEY,
-    collecte_id   BIGINT             NOT NULL UNIQUE,
-    projet_id     BIGINT             NOT NULL,
-    validateur_id BIGINT,
-    statut        validation_statut  NOT NULL DEFAULT 'EN_ATTENTE',
-    commentaire   TEXT,
-    motif_rejet   TEXT,
-    created_at    TIMESTAMP          NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP
+-- Journal des validations EIES
+CREATE TABLE validations_log (
+                                 id              BIGSERIAL     PRIMARY KEY,
+                                 formulaire_id   BIGINT,
+                                 user_id         BIGINT,
+                                 type_validation VARCHAR(50)   NOT NULL,  -- 'CHAMP' | 'COMPLET'
+                                 champ_nom       VARCHAR(100),
+                                 resultat        BOOLEAN       NOT NULL,
+                                 nb_erreurs      INT           NOT NULL DEFAULT 0,
+                                 score_completude INT          NOT NULL DEFAULT 0,
+                                 created_at      TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_validations_projet    ON validations(projet_id);
-CREATE INDEX idx_validations_statut    ON validations(statut);
-CREATE INDEX idx_validations_validateur ON validations(validateur_id);
+CREATE INDEX idx_val_log_formulaire ON validations_log(formulaire_id);
+CREATE INDEX idx_val_log_user       ON validations_log(user_id);
+CREATE INDEX idx_val_log_date       ON validations_log(created_at);
