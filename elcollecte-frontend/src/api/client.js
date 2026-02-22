@@ -12,10 +12,15 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
+// DEBUG: Log the actual URL being used
+console.log('[DEBUG] BASE_URL:', BASE_URL);
+console.log('[DEBUG] VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+
 const client = axios.create({
     baseURL: BASE_URL,
     headers: { 'Content-Type': 'application/json' },
     timeout: 30_000, // 30 secondes
+    withCredentials: false, // Important pour CORS
 });
 
 // ── État du refresh ──────────────────────────────────────────────────────────
@@ -78,8 +83,8 @@ client.interceptors.response.use(
         }
 
         try {
-            const response = await axios.post(
-                `${BASE_URL}/auth/refresh`,
+            const response = await client.post(
+                '/auth/refresh',
                 null,
                 { headers: { 'X-Refresh-Token': refreshToken } }
             );

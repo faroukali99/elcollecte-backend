@@ -9,6 +9,7 @@ import {
   LogOut,
   Settings,
   PieChart,
+  BarChart3,
 } from 'lucide-react';
 import { logout } from '../features/auth/authSlice';
 
@@ -18,6 +19,7 @@ const NAV = [
   { name: 'Collectes',       href: '/collecte',    icon: ClipboardList   },
   { name: 'Validation',      href: '/validation',  icon: CheckCircle2    },
   { name: 'Analytique',      href: '/analytics',   icon: PieChart        },
+  { name: 'Rapport',         href: 'rapport', label: 'Rapport', icon: BarChart3, path: '/rapport' },
 ];
 
 const SYSTEM = [
