@@ -37,7 +37,7 @@ public interface CollecteRepository extends JpaRepository<CollecteData, Long> {
     @Query("""
         SELECT COUNT(c) FROM CollecteData c
         WHERE c.projetId = :projetId
-          AND c.statut = 'SOUMIS'
+          AND c.statut = com.elcollecte.collecte.entity.CollecteData.Statut.SOUMIS
         """)
     long countEnAttente(@Param("projetId") Long projetId);
 }

@@ -10,6 +10,7 @@ public record UpdateProjetRequest(
     @Size(max = 200) String              titre,
     String                               description,
     String                               statut,
+    String                               motifRejet,
     LocalDate                            dateFin,
     Map<String, Object>                  zoneGeo
 ) {}

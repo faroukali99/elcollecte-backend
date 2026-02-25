@@ -27,11 +27,11 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     private String jwtSecret;
 
     private static final List<String> PUBLIC_PATHS = List.of(
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/auth/refresh",
-        "/api/auth/forgot-password",
-        "/api/auth/reset-password"
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/refresh",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password"
     );
 
     public AuthFilter() {
@@ -48,8 +48,8 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
             }
 
             String authHeader = exchange.getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+                    .getHeaders()
+                    .getFirst(HttpHeaders.AUTHORIZATION);
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return onError(exchange, HttpStatus.UNAUTHORIZED, "Token manquant");
@@ -59,24 +59,29 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
 
             try {
                 SecretKey key = Keys.hmacShaKeyFor(
-                    jwtSecret.getBytes(StandardCharsets.UTF_8)
+                        jwtSecret.getBytes(StandardCharsets.UTF_8)
                 );
 
                 Claims claims = Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+                        .verifyWith(key)
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
 
-                ServerHttpRequest mutatedRequest = exchange.getRequest()
-                    .mutate()
-                    .header("X-User-Id",    claims.getSubject())
-                    .header("X-User-Role",  claims.get("role", String.class))
-                    .header("X-User-Email", claims.get("email", String.class))
-                    .header("X-Org-Id",     String.valueOf(claims.get("orgId")))
-                    .build();
+                // CORRECTION : orgId peut être absent du JWT → ne pas envoyer "null" comme String
+                Object orgIdObj = claims.get("orgId");
+                String orgIdStr = (orgIdObj != null && !orgIdObj.toString().equals("null"))
+                        ? orgIdObj.toString()
+                        : "1"; // fallback : orgId = 1 si absent
 
-                return chain.filter(exchange.mutate().request(mutatedRequest).build());
+                ServerHttpRequest.Builder requestBuilder = exchange.getRequest()
+                        .mutate()
+                        .header("X-User-Id",    claims.getSubject())
+                        .header("X-User-Role",  safeHeader(claims.get("role", String.class)))
+                        .header("X-User-Email", safeHeader(claims.get("email", String.class)))
+                        .header("X-Org-Id",     orgIdStr);
+
+                return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
 
             } catch (ExpiredJwtException e) {
                 return onError(exchange, HttpStatus.UNAUTHORIZED, "Token expiré");
@@ -86,13 +91,17 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
         };
     }
 
+    private String safeHeader(String value) {
+        return (value != null) ? value : "";
+    }
+
     private Mono<Void> onError(ServerWebExchange exchange, HttpStatus status, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
-        response.getHeaders().add("Content-Type", "application/json");
+        response.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
         byte[] bytes = ("{\"success\":false,\"message\":\"" + message + "\"}").getBytes(StandardCharsets.UTF_8);
         org.springframework.core.io.buffer.DataBuffer buffer =
-            response.bufferFactory().wrap(bytes);
+                response.bufferFactory().wrap(bytes);
         return response.writeWith(Mono.just(buffer));
     }
 

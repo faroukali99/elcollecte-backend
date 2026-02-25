@@ -10,12 +10,14 @@ import {
   Settings,
   PieChart,
   BarChart3,
+  Shield,
 } from 'lucide-react';
 import { logout } from '../features/auth/authSlice';
 
 const NAV = [
   { name: 'Tableau de bord', href: '/',           icon: LayoutDashboard },
   { name: 'Mes Projets',     href: '/projets',     icon: FolderKanban    },
+  { name: 'Gestion Projets', href: '/gestion-projets', icon: Shield      },
   { name: 'Collectes',       href: '/collecte',    icon: ClipboardList   },
   { name: 'Validation',      href: '/validation',  icon: CheckCircle2    },
   { name: 'Analytique',      href: '/analytics',   icon: PieChart        },

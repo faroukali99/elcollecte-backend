@@ -80,6 +80,7 @@ public class ProjetService {
         if (req.titre()       != null) projet.setTitre(req.titre());
         if (req.description() != null) projet.setDescription(req.description());
         if (req.statut()      != null) projet.setStatut(Projet.Statut.valueOf(req.statut()));
+        if (req.motifRejet()  != null) projet.setMotifRejet(req.motifRejet());
         if (req.dateFin()     != null) projet.setDateFin(req.dateFin());
         if (req.zoneGeo()     != null) projet.setZoneGeo(req.zoneGeo());
 

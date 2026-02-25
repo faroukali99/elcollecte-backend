@@ -31,8 +31,12 @@ public class Projet {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(nullable = false, columnDefinition = "projet_statut")
     private Statut statut = Statut.BROUILLON;
+
+    @Column(columnDefinition = "TEXT")
+    private String motifRejet;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "zone_geo", columnDefinition = "jsonb")
@@ -54,7 +58,7 @@ public class Projet {
     private Set<ProjetEnqueteur> enqueteurs = new HashSet<>();
 
     public enum Statut {
-        BROUILLON, ACTIF, SUSPENDU, TERMINE
+        BROUILLON, ACTIF, SUSPENDU, TERMINE, VALIDE, REJETE
     }
 
     @PrePersist
@@ -72,6 +76,7 @@ public class Projet {
     public String                  getTitre()          { return titre; }
     public String                  getDescription()    { return description; }
     public Statut                  getStatut()         { return statut; }
+    public String                  getMotifRejet()     { return motifRejet; }
     public Map<String, Object>     getZoneGeo()        { return zoneGeo; }
     public LocalDate               getDateDebut()      { return dateDebut; }
     public LocalDate               getDateFin()        { return dateFin; }
@@ -85,6 +90,7 @@ public class Projet {
     public void setTitre(String titre)                   { this.titre = titre; }
     public void setDescription(String description)       { this.description = description; }
     public void setStatut(Statut statut)                 { this.statut = statut; }
+    public void setMotifRejet(String motifRejet)         { this.motifRejet = motifRejet; }
     public void setZoneGeo(Map<String, Object> zoneGeo)  { this.zoneGeo = zoneGeo; }
     public void setDateDebut(LocalDate dateDebut)        { this.dateDebut = dateDebut; }
     public void setDateFin(LocalDate dateFin)            { this.dateFin = dateFin; }

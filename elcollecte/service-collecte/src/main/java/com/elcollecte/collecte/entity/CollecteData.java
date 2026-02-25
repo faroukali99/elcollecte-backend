@@ -1,13 +1,14 @@
 package com.elcollecte.collecte.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.AttributeConverter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
-import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ public class CollecteData {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "jsonb")
-    private Map<String, Object> donnees;
+    private Map<String, Object> donnees = new HashMap<>();
 
     @Column(precision = 10, scale = 7)
     private BigDecimal latitude;
@@ -47,10 +48,11 @@ public class CollecteData {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Object medias;
+    private Map<String, Object> medias = new HashMap<>();
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "statut", nullable = false, columnDefinition = "collecte_statut")
     private Statut statut = Statut.SOUMIS;
 
     @Column(name = "is_offline")
@@ -72,7 +74,14 @@ public class CollecteData {
 
     @PrePersist
     protected void onCreate() {
-        if (this.collectedAt == null) this.collectedAt = LocalDateTime.now();
+        if (this.collectedAt == null) {
+            this.collectedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        // Lifecycle methods can be extended if needed
     }
 
     public CollecteData() {}
@@ -87,7 +96,7 @@ public class CollecteData {
     public Map<String, Object>   getDonnees()       { return donnees; }
     public BigDecimal            getLatitude()      { return latitude; }
     public BigDecimal            getLongitude()     { return longitude; }
-    public Object                getMedias()        { return medias; }
+    public Map<String, Object>   getMedias()        { return medias; }
     public Statut                getStatut()        { return statut; }
     public boolean               isOffline()        { return offline; }
     public String                getMotifRejet()    { return motifRejet; }
@@ -103,7 +112,7 @@ public class CollecteData {
     public void setDonnees(Map<String, Object> v)   { this.donnees = v; }
     public void setLatitude(BigDecimal v)           { this.latitude = v; }
     public void setLongitude(BigDecimal v)          { this.longitude = v; }
-    public void setMedias(Object v)                 { this.medias = v; }
+    public void setMedias(Map<String, Object> v)    { this.medias = v; }
     public void setStatut(Statut v)                 { this.statut = v; }
     public void setOffline(boolean v)               { this.offline = v; }
     public void setMotifRejet(String v)             { this.motifRejet = v; }

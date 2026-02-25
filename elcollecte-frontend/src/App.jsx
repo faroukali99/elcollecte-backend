@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Projets from './pages/Projets';
+import GestionProjets from './pages/GestionProjets';
 import Collecte from './pages/Collecte';
 import Validation from './pages/Validation';
 import Analytics from './pages/Analytics';
@@ -55,6 +56,7 @@ function App() {
                 >
                     <Route index element={<Dashboard/>}/>
                     <Route path="projets" element={<Projets/>}/>
+                    <Route path="gestion-projets" element={<GestionProjets/>}/>
                     <Route path="collecte" element={<Collecte/>}/>
                     <Route path="validation" element={<Validation/>}/>
                     <Route path="analytics" element={<Analytics/>}/>
