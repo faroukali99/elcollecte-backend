@@ -1,0 +1,313 @@
+version: '3.9'
+
+x-common-env: &common-env
+  EUREKA_HOST: service-discovery
+  KAFKA_SERVERS: kafka:29092
+  DB_HOST: postgres
+  DB_PASSWORD: postgres123
+  JWT_SECRET: ${JWT_SECRET:-elcollecte-super-secret-key-2025-change-in-production}
+  MINIO_URL: http://minio:9000
+  MINIO_ACCESS_KEY: minioadmin
+  MINIO_SECRET_KEY: minioadmin123
+
+networks:
+  elcollecte-net:
+    driver: bridge
+
+services:
+  # ---------- INFRA ----------
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: elcollecte-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - elcollecte-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: elcollecte-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass redis123
+    networks:
+      - elcollecte-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: elcollecte-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - elcollecte-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: elcollecte-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      retries: 5
+    networks:
+      - elcollecte-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: elcollecte-kafka-ui
+    ports:
+      - "9090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - elcollecte-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: elcollecte-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin123}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - elcollecte-net
+
+  # ---------- SERVICE DISCOVERY & GATEWAY ----------
+  service-discovery:
+    build:
+      context: .
+      dockerfile: service-discovery/Dockerfile
+      args:
+        MODULE: service-discovery
+    container_name: elcollecte-eureka
+    depends_on:
+      - postgres
+    networks:
+      - elcollecte-net
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      args:
+        MODULE: api-gateway
+    container_name: elcollecte-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *common-env
+    depends_on:
+      - service-discovery
+    networks:
+      - elcollecte-net
+
+  # ---------- BACKEND MICROSERVICES ----------
+  service-utilisateur:
+    build:
+      context: .
+      dockerfile: service-utilisateur/Dockerfile
+      args:
+        MODULE: service-utilisateur
+    container_name: elcollecte-users
+    ports: ["8081:8081"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_users
+    depends_on:
+      - service-discovery
+      - postgres
+    networks:
+      - elcollecte-net
+
+  service-projet:
+    build:
+      context: .
+      dockerfile: service-projet/Dockerfile
+      args:
+        MODULE: service-projet
+    container_name: elcollecte-projets
+    ports: ["8082:8082"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_projets
+    depends_on:
+      - service-discovery
+      - postgres
+    networks:
+      - elcollecte-net
+
+  service-collecte:
+    build:
+      context: .
+      dockerfile: service-collecte/Dockerfile
+      args:
+        MODULE: service-collecte
+    container_name: elcollecte-collecte
+    ports: ["8084:8084"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_collectes
+    depends_on:
+      - service-discovery
+      - postgres
+      - kafka
+    networks:
+      - elcollecte-net
+
+  service-media:
+    build:
+      context: .
+      dockerfile: service-media/Dockerfile
+      args:
+        MODULE: service-media
+    container_name: elcollecte-media
+    ports: ["8085:8085"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_medias
+    depends_on:
+      - service-discovery
+      - postgres
+      - minio
+    networks:
+      - elcollecte-net
+
+  service-analytique:
+    build:
+      context: .
+      dockerfile: service-analytique/Dockerfile
+      args:
+        MODULE: service-analytique
+    container_name: elcollecte-analytique
+    ports: ["8087:8087"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_analytique
+    depends_on:
+      - service-discovery
+      - postgres
+      - kafka
+    networks:
+      - elcollecte-net
+
+  service-rapport:
+    build:
+      context: .
+      dockerfile: service-rapport/Dockerfile
+      args:
+        MODULE: service-rapport
+    container_name: elcollecte-rapport
+    ports: ["8088:8088"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_rapports
+    depends_on:
+      - service-discovery
+      - postgres
+    networks:
+      - elcollecte-net
+
+  service-audit:
+    build:
+      context: .
+      dockerfile: service-audit/Dockerfile
+      args:
+        MODULE: service-audit
+    container_name: elcollecte-audit
+    ports: ["8089:8089"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_audit
+    depends_on:
+      - service-discovery
+      - postgres
+      - kafka
+    networks:
+      - elcollecte-net
+
+  service-validation:
+    build:
+      context: .
+      dockerfile: service-validation/Dockerfile
+      args:
+        MODULE: service-validation
+    container_name: elcollecte-validation
+    ports: ["8090:8090"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_validation
+    depends_on:
+      - service-discovery
+      - postgres
+      - kafka
+    networks:
+      - elcollecte-net
+
+  service-formulaire-eies:
+    build:
+      context: .
+      dockerfile: service-formulaire/Dockerfile
+      args:
+        MODULE: service-formulaire
+    container_name: elcollecte-formulaire-eies
+    ports: ["8091:8091"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_formulaires_eies
+    depends_on:
+      - service-discovery
+      - postgres
+    networks:
+      - elcollecte-net
+
+  # ---------- FRONTEND ----------
+  elcollecte-frontend:
+    build: ../elcollecte-frontend
+    container_name: elcollecte-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - elcollecte-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+# End of file
+

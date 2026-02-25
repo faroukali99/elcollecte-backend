@@ -1,5 +1,11 @@
-FROM eclipse-temurin:24-jre-alpine AS runtime
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
+WORKDIR /build
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests package
+
+FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app
-COPY target/*.jar app.jar
+COPY --from=builder /build/target/*.jar app.jar
 EXPOSE 8761
-ENTRYPOINT ["java", "--enable-preview", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
