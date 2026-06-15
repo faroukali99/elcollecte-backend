@@ -35,7 +35,7 @@ foreach ($service in $services) {
         $jars += @{
             name = $service
             path = $jarPath
-            port = if ($service -eq "service-discovery") { 8761 } else { 8080 + $services.IndexOf($service) }
+            port = if ($service -eq "service-discovery") { 8400 } else { 8080 + $services.IndexOf($service) }
         }
         Write-Host "✅ $service trouvé" -ForegroundColor Green
     } else {
@@ -95,7 +95,7 @@ Write-Host "`n============================================================" -For
 Write-Host " ✅ TOUS LES SERVICES DÉMARRÉS" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "📍 Service Discovery (Eureka): http://localhost:8761" -ForegroundColor Yellow
+Write-Host "📍 Service Discovery (Eureka): http://localhost:8400" -ForegroundColor Yellow
 Write-Host "🔌 API Gateway: http://localhost:8081" -ForegroundColor Yellow
 Write-Host "🔐 Service Utilisateur: http://localhost:8082" -ForegroundColor Yellow
 Write-Host "📋 Service Projet: http://localhost:8083" -ForegroundColor Yellow
@@ -103,6 +103,6 @@ Write-Host "✏️  Service Formulaire: http://localhost:8085" -ForegroundColor 
 Write-Host "📦 Service Collecte: http://localhost:8084" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Attente du démarrage complet (~15-20 secondes)..." -ForegroundColor Gray
-Write-Host "Vérifiez http://localhost:8761 pour voir tous les services enregistrés" -ForegroundColor Gray
+Write-Host "Vérifiez http://localhost:8400 pour voir tous les services enregistrés" -ForegroundColor Gray
 
 

@@ -30,7 +30,7 @@ Write-Host "Demarrage de chaque service dans sa propre fenetre..." -ForegroundCo
 Write-Host ""
 
 $Ports = @{
-    "service-discovery" = "8761"
+    "service-discovery" = "8400"
     "api-gateway" = "8080"
     "service-utilisateur" = "8081"
     "service-projet" = "8082"
@@ -69,7 +69,7 @@ Write-Host "Tous les services ont ete lances dans des fenetres separate." -Foreg
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Acces aux services:" -ForegroundColor Green
-Write-Host "  - Eureka (Service Discovery): http://localhost:8761" -ForegroundColor Cyan
+Write-Host "  - Eureka (Service Discovery): http://localhost:8400" -ForegroundColor Cyan
 Write-Host "  - API Gateway: http://localhost:8080" -ForegroundColor Cyan
 Write-Host "  - Service Collecte: http://localhost:8084/api/collectes" -ForegroundColor Cyan
 Write-Host ""

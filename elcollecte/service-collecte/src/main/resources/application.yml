@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8086 # Port attribué à service-collecte
 
 spring:
   application:
@@ -38,7 +38,7 @@ jwt:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+      defaultZone: http://${EUREKA_HOST:localhost}:10061/eureka # Mise à jour vers le port 10061 du service-discovery
   instance:
     preferIpAddress: true
 

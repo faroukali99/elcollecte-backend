@@ -11,9 +11,9 @@ services:
   service-discovery:
     build: ./service-discovery
     container_name: elcollecte-eureka
-    ports: ["8761:8761"]
+    ports: ["8400:8400"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8400/actuator/health"]
       interval: 20s
       timeout: 5s
       retries: 5

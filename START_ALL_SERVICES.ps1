@@ -58,7 +58,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "============================================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "Services actifs:" -ForegroundColor Cyan
-    Write-Host "  - Service Discovery (Eureka): http://localhost:8761" -ForegroundColor Green
+    Write-Host "  - Service Discovery (Eureka): http://localhost:8400" -ForegroundColor Green
     Write-Host "  - API Gateway: http://localhost:8080" -ForegroundColor Green
     Write-Host "  - Service Utilisateur: http://localhost:8081" -ForegroundColor Green
     Write-Host "  - Service Projet: http://localhost:8082" -ForegroundColor Green

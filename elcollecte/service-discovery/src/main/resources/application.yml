@@ -1,17 +1,11 @@
 server:
-  port: 8762
+  port: 10061 # Port choisi pour Eureka (évite les plages réservées Windows)
 
 spring:
   application:
     name: service-discovery
 
 eureka:
-  instance:
-    hostname: localhost
-
   client:
     register-with-eureka: false
     fetch-registry: false
-
-    service-url:
-      defaultZone: http://localhost:8762/eureka/

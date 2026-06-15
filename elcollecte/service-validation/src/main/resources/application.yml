@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8089 # Port attribué à service-validation
 
 spring:
   application:
@@ -30,7 +30,7 @@ jwt:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+      defaultZone: http://${EUREKA_HOST:localhost}:8400/eureka # Utiliser le port 8400 (évite les plages d'exclusion Windows)
   instance:
     preferIpAddress: true
 

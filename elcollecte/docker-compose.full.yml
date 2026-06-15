@@ -113,12 +113,14 @@ services:
       args:
         MODULE: service-discovery
     container_name: elcollecte-eureka
+    ports:
+      - "8400:8400"
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/status"]
+      test: ["CMD", "curl", "-f", "http://localhost:8400/eureka/status"]
       interval: 30s
       timeout: 10s
       retries: 3

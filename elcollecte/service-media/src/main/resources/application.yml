@@ -1,25 +1,32 @@
 server:
-  port: 8085
+  # The port on which the Media Service will run
+  port: 8083
 
 spring:
   application:
+    # Unique name for this microservice in the ecosystem
     name: service-media
   datasource:
+    # PostgreSQL connection settings with environment variable overrides
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/elcollecte_medias
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:2005}
   jpa:
     hibernate:
+      # 'validate' ensures the database schema matches the entities without modifying it
       ddl-auto: validate
     show-sql: false
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
+    # Enables Flyway for database schema versioning and migrations
     enabled: true
     locations: classpath:db/migration
   kafka:
+    # Kafka broker connection string
     bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     producer:
+      # Serializers for sending messages in JSON format
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
@@ -28,29 +35,37 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
+        # Allow deserialization of objects within the elcollecte package
         spring.json.trusted.packages: "com.elcollecte.*"
   minio:
+    # Configuration for MinIO Object Storage (used for storing physical media files)
     url: ${MINIO_URL:http://localhost:9000}
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin123}
-    bucket: elcollecte-medias\n
+    bucket: elcollecte-medias
+
 jwt:
+  # Secret key used for validating JWT tokens from the Auth service
   secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+      # Registration with the Eureka Discovery Server
+      defaultZone: http://${EUREKA_HOST:localhost}:10061/eureka
   instance:
+    # Use IP address instead of hostname for better reliability in containerized environments
     preferIpAddress: true
 
 management:
   endpoints:
     web:
       exposure:
+        # Expose specific Actuator endpoints for monitoring and health checks
         include: health,info,metrics
 
 springdoc:
+  # Swagger/OpenAPI documentation endpoints
   api-docs:
     path: /api-docs
   swagger-ui:
