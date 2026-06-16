@@ -9,7 +9,7 @@ import Projets from './pages/Projets';
 import GestionProjets from './pages/GestionProjets';
 import Collecte from './pages/Collecte';
 import Validation from './pages/Validation';
-import Analytics from './pages/Analytics';
+import Analytics from './pages/Analytique';
 import Rapport from './pages/Rapport';
 // Composant pour protéger les routes
 const PrivateRoute = ({children}) => {
@@ -60,6 +60,7 @@ function App() {
                     <Route path="collecte" element={<Collecte/>}/>
                     <Route path="validation" element={<Validation/>}/>
                     <Route path="analytics" element={<Analytics/>}/>
+                    <Route path="analytique" element={<Analytics/>}/>
                     <Route path="rapport" element={<Rapport/>}/>
                 </Route>
             </Routes>
