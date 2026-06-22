@@ -56,7 +56,7 @@ public class ValidationController {
             log.setChampNom(request.champNom());
             log.setResultat(result.valide());
             log.setNbErreurs(result.erreurs().size());
-            log.setScoreCompletude(result.score());
+            log.setScoreCompletude(result.scoreCompletude());
             validationLogRepository.save(log);
         }
 
@@ -85,7 +85,7 @@ public class ValidationController {
             log.setTypeValidation("COMPLET");
             log.setResultat(result.valide());
             log.setNbErreurs(result.erreurs().size());
-            log.setScoreCompletude(result.score());
+            log.setScoreCompletude(result.scoreCompletude());
             validationLogRepository.save(log);
         }
 

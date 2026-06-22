@@ -13,7 +13,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     Page<AuditLog> findByAction(String action, Pageable pageable);
     Page<AuditLog> findByRessourceAndRessourceId(String ressource, Long ressourceId, Pageable pageable);
     
-    List<AuditLog> findByEntityTypeAndEntityId(String entityType, Long entityId);
+    List<AuditLog> findByRessourceAndRessourceId(String ressource, Long ressourceId);
     List<AuditLog> findByUserId(Long userId);
-    List<AuditLog> findByTimestampAfter(LocalDateTime timestamp);
+    List<AuditLog> findByCreatedAtAfter(LocalDateTime createdAt);
 }

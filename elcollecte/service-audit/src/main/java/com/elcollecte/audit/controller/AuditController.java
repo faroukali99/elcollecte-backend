@@ -34,7 +34,7 @@ public class AuditController {
     public ResponseEntity<List<AuditLog>> findByEntity(
             @PathVariable String entityType,
             @PathVariable Long entityId) {
-        return ResponseEntity.ok(auditLogRepository.findByEntityTypeAndEntityId(entityType, entityId));
+        return ResponseEntity.ok(auditLogRepository.findByRessourceAndRessourceId(entityType, entityId));
     }
 
     @GetMapping("/user/{userId}")
@@ -46,6 +46,6 @@ public class AuditController {
     @GetMapping("/since/{date}")
     @Operation(summary = "Logs depuis une date")
     public ResponseEntity<List<AuditLog>> findSince(@PathVariable LocalDateTime date) {
-        return ResponseEntity.ok(auditLogRepository.findByTimestampAfter(date));
+        return ResponseEntity.ok(auditLogRepository.findByCreatedAtAfter(date));
     }
 }
