@@ -21,6 +21,8 @@ public class CorsConfig {
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "http://localhost:5174",
+                // Vite may pick another free port (ex: 5175) — ajouter pour éviter les refus CORS
+                "http://localhost:5175",
                 "http://localhost:80",
                 "http://localhost",
                 "http://192.168.56.1:5173",
