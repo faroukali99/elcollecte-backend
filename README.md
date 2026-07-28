@@ -507,3 +507,16 @@ Merci à tous les contributeurs et aux technologies open-source utilisées dans 
 **Version**: 1.0.0  
 **Dernière mise à jour**: 17 Juin 2026  
 **Statut**: ✅ Production Ready
+
+
+<img width="1920" height="919" alt="image" src="https://github.com/user-attachments/assets/cebb0737-b4d6-4d4d-a605-64800e15efca" />
+
+<img width="1913" height="914" alt="image" src="https://github.com/user-attachments/assets/16ead5c2-7afb-4d4f-8610-c9d7be48a12f" />
+
+<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/4b73ef0a-0331-4a87-a86e-74f207bf1f11" />
+
+<img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/b4f83d7c-27cb-4dda-970f-1041f4fb0ca9" />
+
+<img width="1920" height="923" alt="image" src="https://github.com/user-attachments/assets/1697ad95-a165-43ad-aad8-b6054dc17830" />
+
+<img width="1920" height="921" alt="image" src="https://github.com/user-attachments/assets/9c494e03-f434-405e-ad09-a69397232a70" />
