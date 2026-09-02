@@ -1,7 +1,7 @@
 debug: true
 
 server:
-  port: 8771
+  port: 8765
 
 spring:
   application:
@@ -15,4 +15,4 @@ eureka:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: http://localhost:8771/eureka/
+      defaultZone: http://localhost:8765/eureka/

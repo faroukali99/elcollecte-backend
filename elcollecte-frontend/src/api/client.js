@@ -10,17 +10,21 @@ import axios from 'axios';
  * - File d'attente des requêtes pendant le refresh (évite les races conditions)
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    'https://8cnb9tgc-8080.uks1.devtunnels.ms/api';
 
-// DEBUG: Log the actual URL being used
+// DEBUG
 console.log('[DEBUG] BASE_URL:', BASE_URL);
 console.log('[DEBUG] VITE_API_URL from env:', import.meta.env.VITE_API_URL);
 
 const client = axios.create({
     baseURL: BASE_URL,
-    headers: { 'Content-Type': 'application/json' },
-    timeout: 30_000, // 30 secondes
-    withCredentials: false, // Important pour CORS
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    timeout: 30_000,
+    withCredentials: false,
 });
 
 // ── État du refresh ──────────────────────────────────────────────────────────

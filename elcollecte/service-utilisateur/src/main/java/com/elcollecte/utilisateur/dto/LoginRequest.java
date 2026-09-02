@@ -2,7 +2,6 @@ package com.elcollecte.utilisateur.dto;
 
 import jakarta.validation.constraints.*;
 
-// ── Requête de connexion ──────────────────────────────────────────────────────
 public record LoginRequest(
     @NotBlank(message = "Email obligatoire")
     @Email(message = "Format email invalide")

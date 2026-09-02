@@ -61,7 +61,7 @@ export const authService = {
    * @returns {Promise<{ token, refreshToken, tokenType, expiresIn, user }>}
    */
   login: async (email, password) => {
-    const { data } = await client.post('/auth/login', { email, password });
+    const { data } = await client.post('/api/auth/login', { email, password });
     // Backend retourne "token" (pas "accessToken")
     if (data.token) localStorage.setItem('token', data.token);
     if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
@@ -74,7 +74,7 @@ export const authService = {
    * @param {{ nom, prenom, email, password, role, organisationId }} userData
    */
   register: async (userData) => {
-    const { data } = await client.post('/auth/register', userData);
+    const { data } = await client.post('/api/auth/register', userData);
     return data;
   },
 
@@ -84,7 +84,7 @@ export const authService = {
   refreshToken: async () => {
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) throw new Error('Aucun refresh token disponible');
-    const { data } = await client.post('/auth/refresh', null, {
+    const { data } = await client.post('/api/auth/refresh', null, {
       headers: { 'X-Refresh-Token': refreshToken },
     });
     if (data.token) localStorage.setItem('token', data.token);
@@ -97,7 +97,7 @@ export const authService = {
    */
   logout: async () => {
     try {
-      await client.post('/auth/logout');
+      await client.post('/api/auth/logout');
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');

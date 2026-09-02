@@ -1,3 +1,4 @@
+
 package com.elcollecte.gateway.config;
 
 import org.springframework.context.annotation.Bean;
@@ -7,41 +8,121 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 public class CorsConfig {
 
     @Bean
     public CorsWebFilter corsWebFilter() {
+
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Dev origins (Vite default + CRA)
+        /*
+         * ============================================================
+         * ORIGINES AUTORISÉES
+         * ============================================================
+         */
+
         corsConfig.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
+
+                // Vite
                 "http://localhost:5173",
                 "http://localhost:5174",
-                "http://localhost:80",
+
+                // CRA
+                "http://localhost:3000",
+
+                // Local
                 "http://localhost",
+                "http://localhost:80",
+
+                // Réseau local
                 "http://192.168.56.1:5173",
                 "http://192.168.56.1:5174",
                 "http://192.168.56.1:80",
-                "http://192.168.56.1"
+                "http://192.168.56.1",
+
+                // ====================================================
+                // DEV TUNNEL
+                // ====================================================
+                "https://0qjpzb9f-5173.uks1.devtunnels.ms"
         ));
 
-        corsConfig.setMaxAge(3600L);
+
+        /*
+         * ============================================================
+         * MÉTHODES HTTP
+         * ============================================================
+         */
+
         corsConfig.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS",
+                "HEAD"
         ));
-        corsConfig.setAllowedHeaders(Collections.singletonList("*"));
+
+
+        /*
+         * ============================================================
+         * HEADERS AUTORISÉS
+         * ============================================================
+         */
+
+        corsConfig.setAllowedHeaders(Arrays.asList(
+                "*"
+        ));
+
+
+        /*
+         * ============================================================
+         * HEADERS EXPOSÉS AU FRONTEND
+         * ============================================================
+         */
+
         corsConfig.setExposedHeaders(Arrays.asList(
-                "Authorization", "Content-Disposition"
+                "Authorization",
+                "Content-Disposition"
         ));
+
+
+        /*
+         * ============================================================
+         * COOKIES / CREDENTIALS
+         * ============================================================
+         */
+
         corsConfig.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
+
+        /*
+         * ============================================================
+         * CACHE DU PREFLIGHT
+         * ============================================================
+         */
+
+        corsConfig.setMaxAge(3600L);
+
+
+        /*
+         * ============================================================
+         * APPLICATION À TOUTES LES ROUTES
+         * ============================================================
+         */
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                corsConfig
+        );
+
 
         return new CorsWebFilter(source);
     }
 }
+
