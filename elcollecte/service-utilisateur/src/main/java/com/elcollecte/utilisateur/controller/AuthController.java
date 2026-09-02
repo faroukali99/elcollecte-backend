@@ -28,11 +28,22 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Connexion — retourne access token + refresh token")
     public ResponseEntity<AuthResponse> login(
-        @Valid @RequestBody LoginRequest request,
-        HttpServletRequest httpRequest) {
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        System.out.println("==========================================");
+        System.out.println("LOGIN RECU");
+        System.out.println("Email = " + request.email());
+        System.out.println("Password present = " + (request.password() != null));
+        System.out.println("==========================================");
 
         String ip = httpRequest.getRemoteAddr();
-        return ResponseEntity.ok(authService.login(request, ip));
+
+        AuthResponse response = authService.login(request, ip);
+
+        System.out.println("LOGIN SUCCESS");
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")

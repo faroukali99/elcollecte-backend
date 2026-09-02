@@ -1,120 +1,178 @@
-server:
-  port: 8080
-spring:
-  application:
-    name: api-gateway
-  cloud:
-    gateway:
-      routes:
-        # ── Auth (public — no AuthFilter) ──────────────────────────────────
-        - id: auth-public
-          uri: lb://service-utilisateur
-          predicates:
-            - Path=/api/auth/**
+  server:
+    port: 8080
 
-        # ── Users ──────────────────────────────────────────────────────────
-        - id: users-service
-          uri: lb://service-utilisateur
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - AuthFilter
+  spring:
+    application:
+      name: api-gateway
 
-        # ── Projets ────────────────────────────────────────────────────────
-        - id: projets-service
-          uri: lb://service-projet
-          predicates:
-            - Path=/api/projets/**
-          filters:
-            - AuthFilter
+    cloud:
+      gateway:
 
-        # ── Formulaires EIES (service-formulaire-eies sur port 8091) ───────
-        - id: formulaires-service
-          uri: lb://service-formulaire-eies
-          predicates:
-            - Path=/api/formulaires/**
-          filters:
-            - AuthFilter
+        # ============================================================
+        # CORS GLOBAL
+        # ============================================================
+        globalcors:
+          add-to-simple-url-handler-mapping: true
 
-        # ── Collectes ──────────────────────────────────────────────────────
-        - id: collectes-service
-          uri: lb://service-collecte
-          predicates:
-            - Path=/api/collectes/**
-          filters:
-            - AuthFilter
+          cors-configurations:
+            '[/**]':
+              allowedOrigins:
+                - "http://localhost:5173"
+                - "http://127.0.0.1:5173"
+                - "http://localhost:5500"
+                - "http://127.0.0.1:5500"
+                - "https://0qjpzb9f-5173.uks1.devtunnels.ms"
 
-        # ── Médias ─────────────────────────────────────────────────────────
-        - id: media-service
-          uri: lb://service-media
-          predicates:
-            - Path=/api/medias/**
-          filters:
-            - AuthFilter
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
 
-        # ── Validation (health public, reste protégé) ───────────────────────
-        - id: validation-health
-          uri: lb://service-validation
-          predicates:
-            - Path=/api/validations/health
+              allowedHeaders:
+                - "*"
 
-        - id: validation-service
-          uri: lb://service-validation
-          predicates:
-            - Path=/api/validations/**
-          filters:
-            - AuthFilter
+              exposedHeaders:
+                - "*"
 
-        # ── Analytique ─────────────────────────────────────────────────────
-        - id: analytique-service
-          uri: lb://service-analytique
-          predicates:
-            - Path=/api/analytics/**
-          filters:
-            - AuthFilter
+              allowCredentials: true
 
-        # ── Rapports ───────────────────────────────────────────────────────
-        - id: rapport-service
-          uri: lb://service-rapport
-          predicates:
-            - Path=/api/rapports/**
-          filters:
-            - AuthFilter
+              maxAge: 3600
 
-        # ── Service Formulaires EIES (port 8091) ────────────────────────────────
-        - id: formulaires-eies-service
-          uri: lb://service-formulaire-eies     # correspond à spring.application.name dans service-formulaire
-          predicates:
-            - Path=/api/formulaires/**
-          filters:
-            - AuthFilter
+        # ============================================================
+        # ROUTES
+        # ============================================================
+        routes:
 
-        # ── Service Validation (port 8090) ──────────────────────────────────────
-        # Remplace la route "validation-service" existante (qui pointe vers 8086)
-        # car le service-validation écoute sur 8090 et se nomme "service-validation"
-        - id: validation-service
-          uri: lb://service-validation
-          predicates:
-            - Path=/api/validations/**
-          filters:
-            - AuthFilter
+          # ------------------------------------------------------------
+          # AUTHENTIFICATION
+          # Public : aucun AuthFilter
+          # ------------------------------------------------------------
+          - id: auth-public
+            uri: lb://service-utilisateur
+            predicates:
+              - Path=/api/auth/**
+
+          # ------------------------------------------------------------
+          # UTILISATEURS
+          # ------------------------------------------------------------
+          - id: users-service
+            uri: lb://service-utilisateur
+            predicates:
+              - Path=/api/users/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # PROJETS
+          # ------------------------------------------------------------
+          - id: projets-service
+            uri: lb://service-projet
+            predicates:
+              - Path=/api/projets/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # FORMULAIRES EIES
+          # ------------------------------------------------------------
+          - id: formulaires-eies-service
+            uri: lb://service-formulaire-eies
+            predicates:
+              - Path=/api/formulaires/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # COLLECTES
+          # ------------------------------------------------------------
+          - id: collectes-service
+            uri: lb://service-collecte
+            predicates:
+              - Path=/api/collectes/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # MEDIAS
+          # ------------------------------------------------------------
+          - id: media-service
+            uri: lb://service-media
+            predicates:
+              - Path=/api/medias/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # VALIDATION - HEALTH
+          # Public
+          # ------------------------------------------------------------
+          - id: validation-health
+            uri: lb://service-validation
+            predicates:
+              - Path=/api/validations/health
+
+          # ------------------------------------------------------------
+          # VALIDATION
+          # ------------------------------------------------------------
+          - id: validation-service
+            uri: lb://service-validation
+            predicates:
+              - Path=/api/validations/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # ANALYTIQUE
+          # ------------------------------------------------------------
+          - id: analytique-service
+            uri: lb://service-analytique
+            predicates:
+              - Path=/api/analytics/**
+            filters:
+              - AuthFilter
+
+          # ------------------------------------------------------------
+          # RAPPORTS
+          # ------------------------------------------------------------
+          - id: rapport-service
+            uri: lb://service-rapport
+            predicates:
+              - Path=/api/rapports/**
+            filters:
+              - AuthFilter
 
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  health:
-    redis:
-      enabled: false
+  # ================================================================
+  # ACTUATOR
+  # ================================================================
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics
 
-jwt:
-  secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}
+    health:
+      redis:
+        enabled: false
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
-  instance:
-    preferIpAddress: true
+
+  # ================================================================
+  # JWT
+  # ================================================================
+  jwt:
+    secret: ${JWT_SECRET:elcollecte-super-secret-key-2025}
+
+
+  # ================================================================
+  # EUREKA
+  # ================================================================
+  eureka:
+    client:
+      serviceUrl:
+        defaultZone: http://${EUREKA_HOST:localhost}:8765/eureka
+
+    instance:
+      preferIpAddress: true

@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AuthService implements UserDetailsService {
@@ -61,42 +62,139 @@ public class AuthService implements UserDetailsService {
 
     @Transactional
     public AuthResponse login(LoginRequest request, String ipAddress) {
+
+        System.out.println("==========================================");
+        System.out.println("DEBUT AUTH SERVICE LOGIN");
+        System.out.println("Email reçu : " + request.email());
+        System.out.println("==========================================");
+
         try {
-            authManagerProvider.getObject().authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    request.email(), request.password())
+
+            System.out.println("1. Recherche de AuthenticationManager...");
+
+            AuthenticationManager authenticationManager =
+                    authManagerProvider.getObject();
+
+            System.out.println("2. AuthenticationManager trouvé");
+
+            System.out.println("3. Authentification de : " + request.email());
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
             );
+
+            System.out.println("4. AUTHENTIFICATION OK");
+
         } catch (AuthenticationException e) {
-            publishAuditEvent("LOGIN_FAILED", null, ipAddress,
-                "Tentative échouée: " + request.email());
-            throw new BadCredentialsException("Identifiants incorrects");
+
+            System.out.println("❌ AUTHENTIFICATION REFUSÉE");
+            System.out.println("Type : " + e.getClass().getName());
+            System.out.println("Message : " + e.getMessage());
+
+            publishAuditEvent(
+                    "LOGIN_FAILED",
+                    null,
+                    ipAddress,
+                    "Tentative échouée: " + request.email()
+            );
+
+            throw new BadCredentialsException(
+                    "Identifiants incorrects"
+            );
         }
 
-        User user = userRepository.findByEmailAndActiveTrue(request.email())
-            .orElseThrow(() -> new BadCredentialsException("Compte inactif ou introuvable"));
+        System.out.println("5. Recherche utilisateur en base...");
 
-        String accessToken  = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+        Optional<User> userOptional =
+                userRepository.findByEmailAndActiveTrue(request.email());
 
-        userRepository.updateRefreshToken(user.getId(),
-            passwordEncoder.encode(refreshToken));
-        userRepository.updateLastLogin(user.getId(), LocalDateTime.now());
-
-        publishAuditEvent("LOGIN_SUCCESS", user.getId(), ipAddress, null);
-
-        return new AuthResponse(
-            accessToken,
-            refreshToken,
-            jwtService.getAccessTokenExpirationSeconds(),
-            new AuthResponse.UserInfo(
-                user.getId(),
-                user.getNom(),
-                user.getPrenom(),
-                user.getEmail(),
-                user.getRole().name(),
-                user.getOrganisation() != null ? user.getOrganisation().getId() : null
-            )
+        System.out.println(
+                "6. Utilisateur trouvé ? " + userOptional.isPresent()
         );
+
+        if (userOptional.isEmpty()) {
+
+            System.out.println(
+                    "❌ Aucun utilisateur actif trouvé pour : "
+                            + request.email()
+            );
+
+            throw new BadCredentialsException(
+                    "Compte inactif ou introuvable"
+            );
+        }
+
+        User user = userOptional.get();
+
+        System.out.println("7. Utilisateur chargé");
+        System.out.println("ID       : " + user.getId());
+        System.out.println("Email    : " + user.getEmail());
+        System.out.println("Nom      : " + user.getNom());
+        System.out.println("Prénom   : " + user.getPrenom());
+        System.out.println("Role     : " + user.getRole());
+        System.out.println("Active   : " + user.isActive());
+
+        System.out.println("8. Génération access token...");
+
+        String accessToken =
+                jwtService.generateAccessToken(user);
+
+        System.out.println("9. Access token généré");
+
+        System.out.println("10. Génération refresh token...");
+
+        String refreshToken =
+                jwtService.generateRefreshToken(user);
+
+        System.out.println("11. Refresh token généré");
+
+        userRepository.updateRefreshToken(
+                user.getId(),
+                passwordEncoder.encode(refreshToken)
+        );
+
+        System.out.println("12. Refresh token enregistré");
+
+        userRepository.updateLastLogin(
+                user.getId(),
+                LocalDateTime.now()
+        );
+
+        System.out.println("13. Last login enregistré");
+
+        publishAuditEvent(
+                "LOGIN_SUCCESS",
+                user.getId(),
+                ipAddress,
+                null
+        );
+
+        System.out.println("14. Audit envoyé");
+
+        AuthResponse response = new AuthResponse(
+                accessToken,
+                refreshToken,
+                jwtService.getAccessTokenExpirationSeconds(),
+                new AuthResponse.UserInfo(
+                        user.getId(),
+                        user.getNom(),
+                        user.getPrenom(),
+                        user.getEmail(),
+                        user.getRole().name(),
+                        user.getOrganisation() != null
+                                ? user.getOrganisation().getId()
+                                : null
+                )
+        );
+
+        System.out.println("==========================================");
+        System.out.println("LOGIN SUCCESS");
+        System.out.println("==========================================");
+
+        return response;
     }
 
     @Transactional
