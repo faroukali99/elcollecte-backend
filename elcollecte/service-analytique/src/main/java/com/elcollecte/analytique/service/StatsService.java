@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +94,66 @@ public class StatsService {
     @Transactional(readOnly = true)
     public StatsProjet getByProjet(Long projetId) {
         return getOrCreate(projetId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getByEnqueteur(Long enqueteurId, Long orgId) {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // TODO: Implementer la logique de statistiques par enquêteur
+        // Pour l'instant, retourne des données de placeholder
+        stats.put("enqueteurId", enqueteurId);
+        stats.put("totalCollectes", 0);
+        stats.put("collectesValidees", 0);
+        stats.put("collectesRejetees", 0);
+        stats.put("collectesEnAttente", 0);
+        stats.put("tauxValidation", 0.0);
+        
+        return stats;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getByPeriode(String dateDebut, String dateFin, Long orgId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate debut = LocalDate.parse(dateDebut, formatter);
+        LocalDate fin = LocalDate.parse(dateFin, formatter);
+        
+        Map<String, Object> stats = new HashMap<>();
+        List<Map<String, Object>> timeline = dailyRepo.findTimelineByProjet(null, debut);
+        
+        long totalCollectes = timeline.stream()
+            .filter(t -> {
+                LocalDate date = LocalDate.parse(t.get("date").toString());
+                return !date.isBefore(debut) && !date.isAfter(fin);
+            })
+            .mapToLong(t -> ((Number) t.getOrDefault("collectes", 0)).longValue())
+            .sum();
+        
+        long totalValidees = timeline.stream()
+            .filter(t -> {
+                LocalDate date = LocalDate.parse(t.get("date").toString());
+                return !date.isBefore(debut) && !date.isAfter(fin);
+            })
+            .mapToLong(t -> ((Number) t.getOrDefault("validees", 0)).longValue())
+            .sum();
+        
+        long totalRejetees = timeline.stream()
+            .filter(t -> {
+                LocalDate date = LocalDate.parse(t.get("date").toString());
+                return !date.isBefore(debut) && !date.isAfter(fin);
+            })
+            .mapToLong(t -> ((Number) t.getOrDefault("rejetees", 0)).longValue())
+            .sum();
+        
+        stats.put("periode", dateDebut + " au " + dateFin);
+        stats.put("totalCollectes", totalCollectes);
+        stats.put("totalValidees", totalValidees);
+        stats.put("totalRejetees", totalRejetees);
+        stats.put("totalEnAttente", totalCollectes - totalValidees - totalRejetees);
+        stats.put("tauxValidation", totalCollectes > 0 ? 
+            Math.round((double) totalValidees / totalCollectes * 10000.0) / 100.0 : 0.0);
+        
+        return stats;
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

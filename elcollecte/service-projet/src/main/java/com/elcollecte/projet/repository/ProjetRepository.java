@@ -14,13 +14,13 @@ public interface ProjetRepository extends JpaRepository<Projet, Long> {
 
     Page<Projet> findAllByOrganisationId(Long organisationId, Pageable pageable);
 
-    Page<Projet> findAllByChefProjetId(Long chefProjetId, Pageable pageable);
+    Page<Projet> findAllByResponsableId(Long responsableId, Pageable pageable);
 
     @Query("""
         SELECT DISTINCT p FROM Projet p
         LEFT JOIN p.enqueteurs pe
         WHERE p.organisationId = :orgId
-          AND (p.chefProjetId = :userId OR pe.userId = :userId)
+          AND (p.responsableId = :userId OR pe.userId = :userId)
         """)
     Page<Projet> findAccessibleByUser(@Param("orgId")    Long orgId,
                                       @Param("userId")   Long userId,

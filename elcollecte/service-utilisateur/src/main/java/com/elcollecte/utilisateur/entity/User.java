@@ -33,9 +33,17 @@ public class User implements UserDetails {
     @Column(name = "password_hash", nullable = false)
     private String password;
 
+    // ⚠️ LEGACY — conservé pour compatibilité descendante pendant la migration
+    // vers le système dynamique Profil/Permission (voir V3/V4 migrations et
+    // le champ `profil` ci-dessous). Ne plus utiliser dans du nouveau code :
+    // préférer `profil` + les permissions qui lui sont associées.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profil_id")
+    private Profil profil;
 
     @Column(name = "is_active")
     private boolean active = true;
@@ -77,7 +85,15 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        // Autorités combinées : rôle legacy (compat) + permissions dynamiques
+        // issues du profil (si un profil est déjà rattaché à l'utilisateur).
+        List<GrantedAuthority> authorities = new java.util.ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        if (profil != null) {
+            profil.getProfilPermissions().forEach(pp ->
+                authorities.add(new SimpleGrantedAuthority("PERM_" + pp.getPermission().getCode())));
+        }
+        return authorities;
     }
 
     @Override public String   getUsername()              { return email; }
@@ -95,6 +111,7 @@ public class User implements UserDetails {
     public String       getEmail()         { return email; }
     public String       getPassword()      { return password; }
     public Role         getRole()          { return role; }
+    public Profil       getProfil()        { return profil; }
     public boolean      isActive()         { return active; }
     public String       getRefreshToken()  { return refreshToken; }
     public LocalDateTime getCreatedAt()    { return createdAt; }
@@ -107,6 +124,7 @@ public class User implements UserDetails {
     public void setEmail(String email)               { this.email = email; }
     public void setPassword(String password)         { this.password = password; }
     public void setRole(Role role)                   { this.role = role; }
+    public void setProfil(Profil profil)             { this.profil = profil; }
     public void setActive(boolean active)            { this.active = active; }
     public void setRefreshToken(String token)        { this.refreshToken = token; }
     public void setCreatedAt(LocalDateTime t)        { this.createdAt = t; }

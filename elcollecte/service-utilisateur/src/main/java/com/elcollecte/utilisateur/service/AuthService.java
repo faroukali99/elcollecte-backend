@@ -4,8 +4,10 @@ import com.elcollecte.utilisateur.dto.AuthResponse;
 import com.elcollecte.utilisateur.dto.LoginRequest;
 import com.elcollecte.utilisateur.dto.RegisterRequest;
 import com.elcollecte.utilisateur.entity.Organisation;
+import com.elcollecte.utilisateur.entity.Profil;
 import com.elcollecte.utilisateur.entity.User;
 import com.elcollecte.utilisateur.repository.OrganisationRepository;
+import com.elcollecte.utilisateur.repository.ProfilRepository;
 import com.elcollecte.utilisateur.repository.UserRepository;
 import com.elcollecte.utilisateur.security.JwtService;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -34,6 +37,7 @@ public class AuthService implements UserDetailsService {
 
     private final UserRepository         userRepository;
     private final OrganisationRepository orgRepository;
+    private final ProfilRepository       profilRepository;
     private final JwtService             jwtService;
     private final PasswordEncoder        passwordEncoder;
     private final ObjectProvider<AuthenticationManager> authManagerProvider;
@@ -41,12 +45,14 @@ public class AuthService implements UserDetailsService {
 
     public AuthService(UserRepository userRepository,
                        OrganisationRepository orgRepository,
+                       ProfilRepository profilRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
                        ObjectProvider<AuthenticationManager> authManagerProvider,
                        KafkaTemplate<String, Object> kafkaTemplate) {
         this.userRepository  = userRepository;
         this.orgRepository   = orgRepository;
+        this.profilRepository = profilRepository;
         this.jwtService      = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authManagerProvider = authManagerProvider;
@@ -84,6 +90,12 @@ public class AuthService implements UserDetailsService {
 
         publishAuditEvent("LOGIN_SUCCESS", user.getId(), ipAddress, null);
 
+        List<String> permissionCodes = (user.getProfil() != null)
+            ? user.getProfil().getProfilPermissions().stream()
+                .map(pp -> pp.getPermission().getCode())
+                .toList()
+            : List.of();
+
         return new AuthResponse(
             accessToken,
             refreshToken,
@@ -94,6 +106,9 @@ public class AuthService implements UserDetailsService {
                 user.getPrenom(),
                 user.getEmail(),
                 user.getRole().name(),
+                user.getProfil() != null ? user.getProfil().getCode() : null,
+                user.getProfil() != null ? user.getProfil().getLibelle() : null,
+                permissionCodes,
                 user.getOrganisation() != null ? user.getOrganisation().getId() : null
             )
         );
@@ -134,14 +149,22 @@ public class AuthService implements UserDetailsService {
             .orElseThrow(() -> new IllegalArgumentException(
                 "Organisation introuvable: " + req.organisationId()));
 
+        User.Role role = User.Role.valueOf(req.role().toUpperCase());
+
         User user = new User(
             req.nom(),
             req.prenom(),
             req.email(),
             passwordEncoder.encode(req.password()),
-            User.Role.valueOf(req.role().toUpperCase()),
+            role,
             org
         );
+
+        // Rattachement automatique au profil système miroir du rôle choisi
+        // (créés par la migration V4). S'il venait à manquer pour une
+        // raison quelconque, l'utilisateur reste créé sans profil : il
+        // pourra être régularisé ensuite par un ADMIN via /api/users/{id}/profil.
+        profilRepository.findByCode(role.name()).ifPresent(user::setProfil);
 
         userRepository.save(user);
         publishAuditEvent("USER_CREATED", user.getId(), null,

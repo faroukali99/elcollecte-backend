@@ -20,6 +20,22 @@ spring:
           filters:
             - AuthFilter
 
+        # ── Profils (Phase 1 IAM) ───────────────────────────────────────────
+        - id: profils-service
+          uri: lb://service-utilisateur
+          predicates:
+            - Path=/api/profils/**
+          filters:
+            - AuthFilter
+
+        # ── Permissions (Phase 1 IAM) ───────────────────────────────────────
+        - id: permissions-service
+          uri: lb://service-utilisateur
+          predicates:
+            - Path=/api/permissions/**
+          filters:
+            - AuthFilter
+
         # ── Projets ────────────────────────────────────────────────────────
         - id: projets-service
           uri: lb://service-projet
@@ -33,6 +49,30 @@ spring:
           uri: lb://service-formulaire-eies
           predicates:
             - Path=/api/formulaires/**
+          filters:
+            - AuthFilter
+
+        # ── Missions ───────────────────────────────────────────────────────
+        - id: missions-service
+          uri: lb://service-mission
+          predicates:
+            - Path=/api/missions/**
+          filters:
+            - AuthFilter
+
+        # ── Cartographie ───────────────────────────────────────────────────
+        - id: cartographie-service
+          uri: lb://service-cartographie
+          predicates:
+            - Path=/api/cartographie/**
+          filters:
+            - AuthFilter
+
+        # ── Synchronisation ────────────────────────────────────────────────
+        - id: synchronisation-service
+          uri: lb://service-synchronisation
+          predicates:
+            - Path=/api/synchronisation/**
           filters:
             - AuthFilter
 
@@ -65,6 +105,14 @@ spring:
           filters:
             - AuthFilter
 
+        # ── Audit ─────────────────────────────────────────────────────────
+        - id: audit-service
+          uri: lb://service-audit
+          predicates:
+            - Path=/api/audit/**
+          filters:
+            - AuthFilter
+
         # ── Analytique ─────────────────────────────────────────────────────
         - id: analytique-service
           uri: lb://service-analytique
@@ -78,24 +126,6 @@ spring:
           uri: lb://service-rapport
           predicates:
             - Path=/api/rapports/**
-          filters:
-            - AuthFilter
-
-        # ── Service Formulaires EIES (port 8091) ────────────────────────────────
-        - id: formulaires-eies-service
-          uri: lb://service-formulaire-eies     # correspond à spring.application.name dans service-formulaire
-          predicates:
-            - Path=/api/formulaires/**
-          filters:
-            - AuthFilter
-
-        # ── Service Validation (port 8090) ──────────────────────────────────────
-        # Remplace la route "validation-service" existante (qui pointe vers 8086)
-        # car le service-validation écoute sur 8090 et se nomme "service-validation"
-        - id: validation-service
-          uri: lb://service-validation
-          predicates:
-            - Path=/api/validations/**
           filters:
             - AuthFilter
 

@@ -82,4 +82,45 @@ public class CollecteController {
         collecteService.rejeter(id, motif, validateurId);
         return ResponseEntity.ok(Map.of("message", "Collecte rejetée"));
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Détails d'une collecte")
+    public ResponseEntity<CollecteDto> getById(
+        @PathVariable              Long id,
+        @RequestHeader("X-User-Id") Long userId,
+        @RequestHeader("X-User-Role") String role) {
+
+        return ResponseEntity.ok(collecteService.findById(id, userId, role));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Modifier une collecte (brouillon uniquement)")
+    public ResponseEntity<CollecteDto> update(
+        @PathVariable              Long id,
+        @Valid @RequestBody       UpdateCollecteRequest request,
+        @RequestHeader("X-User-Id") Long userId) {
+
+        return ResponseEntity.ok(collecteService.update(id, request, userId));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Supprimer une collecte (brouillon uniquement)")
+    public ResponseEntity<Map<String, String>> delete(
+        @PathVariable              Long id,
+        @RequestHeader("X-User-Id") Long userId) {
+
+        collecteService.delete(id, userId);
+        return ResponseEntity.ok(Map.of("message", "Collecte supprimée"));
+    }
+
+    @PatchMapping("/{id}/statut")
+    @Operation(summary = "Changer le statut d'une collecte")
+    public ResponseEntity<Map<String, String>> updateStatut(
+        @PathVariable              Long id,
+        @RequestParam              String statut,
+        @RequestHeader("X-User-Id") Long userId) {
+
+        collecteService.updateStatut(id, statut, userId);
+        return ResponseEntity.ok(Map.of("message", "Statut mis à jour"));
+    }
 }

@@ -54,4 +54,38 @@ public class RapportController {
     public ResponseEntity<List<RapportDto>> findMyRapports(@RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(rapportService.findByCreePar(userId));
     }
+
+    @GetMapping("/export/csv")
+    @Operation(summary = "Exporter les collectes en CSV")
+    public ResponseEntity<byte[]> exportCsv(
+            @RequestParam(required = false) Long projetId,
+            @RequestParam(required = false) Long enqueteId,
+            @RequestParam(required = false) Long enqueteurId,
+            @RequestParam(required = false) String dateDebut,
+            @RequestParam(required = false) String dateFin,
+            @RequestParam(required = false) String statut) {
+        
+        byte[] csvData = rapportService.exportCsv(projetId, enqueteId, enqueteurId, dateDebut, dateFin, statut);
+        return ResponseEntity.ok()
+            .header("Content-Type", "text/csv")
+            .header("Content-Disposition", "attachment; filename=collectes_export.csv")
+            .body(csvData);
+    }
+
+    @GetMapping("/export/excel")
+    @Operation(summary = "Exporter les collectes en Excel")
+    public ResponseEntity<byte[]> exportExcel(
+            @RequestParam(required = false) Long projetId,
+            @RequestParam(required = false) Long enqueteId,
+            @RequestParam(required = false) Long enqueteurId,
+            @RequestParam(required = false) String dateDebut,
+            @RequestParam(required = false) String dateFin,
+            @RequestParam(required = false) String statut) {
+        
+        byte[] excelData = rapportService.exportExcel(projetId, enqueteId, enqueteurId, dateDebut, dateFin, statut);
+        return ResponseEntity.ok()
+            .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .header("Content-Disposition", "attachment; filename=collectes_export.xlsx")
+            .body(excelData);
+    }
 }

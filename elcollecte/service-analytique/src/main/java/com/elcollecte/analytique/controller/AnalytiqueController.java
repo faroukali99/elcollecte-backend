@@ -61,4 +61,27 @@ public class AnalytiqueController {
             @RequestParam(defaultValue = "30") int days) {
         return ResponseEntity.ok(statsService.getTimeline(null, days));
     }
+
+    /**
+     * Statistiques par enquêteur
+     */
+    @GetMapping("/enqueteurs/{enqueteurId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getStatsByEnqueteur(
+            @PathVariable Long enqueteurId,
+            @RequestHeader(value = "X-Org-Id", required = false) Long orgId) {
+        return ResponseEntity.ok(statsService.getByEnqueteur(enqueteurId, orgId));
+    }
+
+    /**
+     * Statistiques par période
+     */
+    @GetMapping("/periode")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getStatsByPeriode(
+            @RequestParam String dateDebut,
+            @RequestParam String dateFin,
+            @RequestHeader(value = "X-Org-Id", required = false) Long orgId) {
+        return ResponseEntity.ok(statsService.getByPeriode(dateDebut, dateFin, orgId));
+    }
 }
