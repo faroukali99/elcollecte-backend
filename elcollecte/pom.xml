@@ -21,6 +21,8 @@
     <module>service-analytique</module>
     <module>service-rapport</module>
     <module>service-audit</module>
+      <module>service-mission</module>
+    <module>service-cartographie</module>
   </modules>
 
   <parent>

@@ -1,10 +1,13 @@
 package com.elcollecte.projet.service;
 
+import com.elcollecte.projet.dto.AddMembreRequest;
 import com.elcollecte.projet.dto.CreateProjetRequest;
 import com.elcollecte.projet.dto.ProjetDto;
+import com.elcollecte.projet.dto.ProjetMembreDto;
 import com.elcollecte.projet.dto.UpdateProjetRequest;
 import com.elcollecte.projet.entity.Projet;
 import com.elcollecte.projet.entity.ProjetEnqueteur;
+import com.elcollecte.projet.entity.ProjetMembre;
 import com.elcollecte.projet.repository.ProjetRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -50,12 +53,12 @@ public class ProjetService {
     }
 
     @Transactional
-    public ProjetDto create(CreateProjetRequest req, Long chefProjetId, Long orgId) {
+    public ProjetDto create(CreateProjetRequest req, Long responsableId, Long orgId) {
         Projet projet = new Projet();
         projet.setTitre(req.titre());
         projet.setDescription(req.description());
         projet.setOrganisationId(orgId);
-        projet.setChefProjetId(chefProjetId);
+        projet.setResponsableId(responsableId);
         projet.setDateDebut(req.dateDebut());
         projet.setDateFin(req.dateFin());
         projet.setZoneGeo(req.zoneGeo());
@@ -66,7 +69,7 @@ public class ProjetService {
         Map<String, Object> event = new HashMap<>();
         event.put("type",      "PROJET_CREE");
         event.put("projetId",  saved.getId());
-        event.put("userId",    chefProjetId);
+        event.put("userId",    responsableId);
         kafkaTemplate.send("projet.cree", event);
 
         return ProjetDto.from(saved);
@@ -111,5 +114,42 @@ public class ProjetService {
             .forEach(e -> e.setActive(false));
 
         projetRepository.save(projet);
+    }
+
+    @Transactional
+    public void addMembre(Long projetId, AddMembreRequest req, Long orgId) {
+        Projet projet = projetRepository.findByIdAndOrganisationId(projetId, orgId)
+            .orElseThrow(() -> new NoSuchElementException("Projet introuvable"));
+
+        boolean alreadyAssigned = projet.getMembres().stream()
+            .anyMatch(m -> m.getUserId().equals(req.userId()) && m.isActive());
+
+        if (!alreadyAssigned) {
+            projet.getMembres().add(new ProjetMembre(projet, req.userId(), req.roleMembre()));
+            projetRepository.save(projet);
+        }
+    }
+
+    @Transactional
+    public void removeMembre(Long projetId, Long membreId, Long orgId) {
+        Projet projet = projetRepository.findByIdAndOrganisationId(projetId, orgId)
+            .orElseThrow(() -> new NoSuchElementException("Projet introuvable"));
+
+        projet.getMembres().stream()
+            .filter(m -> m.getUserId().equals(membreId))
+            .forEach(m -> m.setActive(false));
+
+        projetRepository.save(projet);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<ProjetMembreDto> listMembres(Long projetId, Long orgId) {
+        Projet projet = projetRepository.findByIdAndOrganisationId(projetId, orgId)
+            .orElseThrow(() -> new NoSuchElementException("Projet introuvable"));
+
+        return projet.getMembres().stream()
+            .filter(m -> m.isActive())
+            .map(ProjetMembreDto::from)
+            .toList();
     }
 }

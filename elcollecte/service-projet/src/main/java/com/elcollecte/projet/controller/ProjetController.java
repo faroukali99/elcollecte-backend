@@ -1,7 +1,9 @@
 package com.elcollecte.projet.controller;
 
+import com.elcollecte.projet.dto.AddMembreRequest;
 import com.elcollecte.projet.dto.CreateProjetRequest;
 import com.elcollecte.projet.dto.ProjetDto;
+import com.elcollecte.projet.dto.ProjetMembreDto;
 import com.elcollecte.projet.dto.UpdateProjetRequest;
 import com.elcollecte.projet.service.ProjetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,12 +58,12 @@ public class ProjetController {
     @Operation(summary = "Créer un projet")
     public ResponseEntity<ProjetDto> create(
             @Valid @RequestBody                                    CreateProjetRequest request,
-            @RequestHeader("X-User-Id")                           Long               userId,
+            @RequestHeader("X-User-Id")                           Long               responsableId,
             @RequestHeader(value = "X-Org-Id", required = false)  Long               orgId) {
 
         Long effectiveOrgId = (orgId != null) ? orgId : 1L;
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(projetService.create(request, userId, effectiveOrgId));
+                .body(projetService.create(request, responsableId, effectiveOrgId));
     }
 
     @PutMapping("/{id}")
@@ -96,6 +98,40 @@ public class ProjetController {
 
         Long effectiveOrgId = (orgId != null) ? orgId : 1L;
         projetService.removeEnqueteur(id, enqueteurId, effectiveOrgId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/membres")
+    @Operation(summary = "Lister les membres de l'équipe du projet")
+    public ResponseEntity<java.util.List<ProjetMembreDto>> listMembres(
+            @PathVariable                                         Long id,
+            @RequestHeader(value = "X-Org-Id", required = false) Long orgId) {
+
+        Long effectiveOrgId = (orgId != null) ? orgId : 1L;
+        return ResponseEntity.ok(projetService.listMembres(id, effectiveOrgId));
+    }
+
+    @PostMapping("/{id}/membres")
+    @Operation(summary = "Ajouter un membre à l'équipe du projet")
+    public ResponseEntity<Void> addMembre(
+            @PathVariable                                         Long id,
+            @Valid @RequestBody                                   AddMembreRequest request,
+            @RequestHeader(value = "X-Org-Id", required = false) Long orgId) {
+
+        Long effectiveOrgId = (orgId != null) ? orgId : 1L;
+        projetService.addMembre(id, request, effectiveOrgId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/membres/{membreId}")
+    @Operation(summary = "Retirer un membre de l'équipe du projet")
+    public ResponseEntity<Void> removeMembre(
+            @PathVariable                                         Long id,
+            @PathVariable                                         Long membreId,
+            @RequestHeader(value = "X-Org-Id", required = false) Long orgId) {
+
+        Long effectiveOrgId = (orgId != null) ? orgId : 1L;
+        projetService.removeMembre(id, membreId, effectiveOrgId);
         return ResponseEntity.noContent().build();
     }
 }

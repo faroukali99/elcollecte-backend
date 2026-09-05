@@ -7,17 +7,19 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="service-mission" />
+        <module name="service-validation" />
+        <module name="service-rapport" />
+        <module name="common-lib" />
+        <module name="service-analytique" />
         <module name="service-projet" />
         <module name="service-media" />
         <module name="service-audit" />
         <module name="service-utilisateur" />
         <module name="service-collecte" />
         <module name="api-gateway" />
-        <module name="service-validation" />
         <module name="service-formulaire" />
-        <module name="service-rapport" />
-        <module name="common-lib" />
-        <module name="service-analytique" />
+        <module name="service-cartographie" />
         <module name="service-discovery" />
       </profile>
     </annotationProcessing>
@@ -29,10 +31,12 @@
       <module name="elcollecte-parent" options="-parameters" />
       <module name="service-analytique" options="-parameters" />
       <module name="service-audit" options="-parameters" />
+      <module name="service-cartographie" options="-parameters" />
       <module name="service-collecte" options="-parameters" />
       <module name="service-discovery" options="-parameters" />
       <module name="service-formulaire" options="-parameters" />
       <module name="service-media" options="-parameters" />
+      <module name="service-mission" options="-parameters" />
       <module name="service-projet" options="-parameters" />
       <module name="service-rapport" options="-parameters" />
       <module name="service-utilisateur" options="-parameters" />

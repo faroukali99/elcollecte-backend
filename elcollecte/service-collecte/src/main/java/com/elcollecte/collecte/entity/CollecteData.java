@@ -27,6 +27,12 @@ public class CollecteData {
     @Column(name = "formulaire_id", nullable = false)
     private Long formulaireId;
 
+    @Column(name = "formulaire_version_id")
+    private Long formulaireVersionId;
+
+    @Column(name = "mission_id")
+    private Long missionId;
+
     @Column(name = "enqueteur_id", nullable = false)
     private Long enqueteurId;
 
@@ -70,7 +76,7 @@ public class CollecteData {
     @Column(name = "validated_at")
     private LocalDateTime validatedAt;
 
-    public enum Statut { BROUILLON, SOUMIS, VALIDE, REJETE }
+    public enum Statut { BROUILLON, SOUMIS, EN_VALIDATION, VALIDE, REJETE }
 
     @PrePersist
     protected void onCreate() {
@@ -90,6 +96,8 @@ public class CollecteData {
     public Long                  getId()            { return id; }
     public UUID                  getUuid()          { return uuid; }
     public Long                  getFormulaireId()  { return formulaireId; }
+    public Long                  getFormulaireVersionId() { return formulaireVersionId; }
+    public Long                  getMissionId()     { return missionId; }
     public Long                  getEnqueteurId()   { return enqueteurId; }
     public Long                  getProjetId()      { return projetId; }
     public Long                  getValidateurId()  { return validateurId; }
@@ -106,6 +114,8 @@ public class CollecteData {
 
     // ── Setters ───────────────────────────────────────────────────────────────
     public void setFormulaireId(Long v)             { this.formulaireId = v; }
+    public void setFormulaireVersionId(Long v)      { this.formulaireVersionId = v; }
+    public void setMissionId(Long v)                { this.missionId = v; }
     public void setEnqueteurId(Long v)              { this.enqueteurId = v; }
     public void setProjetId(Long v)                 { this.projetId = v; }
     public void setValidateurId(Long v)             { this.validateurId = v; }

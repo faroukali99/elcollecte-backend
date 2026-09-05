@@ -21,8 +21,8 @@ public class Projet {
     @Column(name = "organisation_id", nullable = false)
     private Long organisationId;
 
-    @Column(name = "chef_projet_id", nullable = false)
-    private Long chefProjetId;
+    @Column(name = "responsable_id", nullable = false)
+    private Long responsableId;
 
     @Column(nullable = false, length = 200)
     private String titre;
@@ -57,8 +57,11 @@ public class Projet {
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProjetEnqueteur> enqueteurs = new HashSet<>();
 
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProjetMembre> membres = new HashSet<>();
+
     public enum Statut {
-        BROUILLON, ACTIF, SUSPENDU, TERMINE, VALIDE, REJETE
+        BROUILLON, PLANIFIE, EN_COURS, SUSPENDU, TERMINE, ARCHIVE
     }
 
     @PrePersist
@@ -72,7 +75,7 @@ public class Projet {
     // ── Getters / Setters ────────────────────────────────────────────────────
     public Long                    getId()             { return id; }
     public Long                    getOrganisationId() { return organisationId; }
-    public Long                    getChefProjetId()   { return chefProjetId; }
+    public Long                    getResponsableId()  { return responsableId; }
     public String                  getTitre()          { return titre; }
     public String                  getDescription()    { return description; }
     public Statut                  getStatut()         { return statut; }
@@ -83,10 +86,11 @@ public class Projet {
     public LocalDateTime           getCreatedAt()      { return createdAt; }
     public LocalDateTime           getUpdatedAt()      { return updatedAt; }
     public Set<ProjetEnqueteur>    getEnqueteurs()     { return enqueteurs; }
+    public Set<ProjetMembre>       getMembres()        { return membres; }
 
     public void setId(Long id)                           { this.id = id; }
     public void setOrganisationId(Long organisationId)   { this.organisationId = organisationId; }
-    public void setChefProjetId(Long chefProjetId)       { this.chefProjetId = chefProjetId; }
+    public void setResponsableId(Long responsableId)     { this.responsableId = responsableId; }
     public void setTitre(String titre)                   { this.titre = titre; }
     public void setDescription(String description)       { this.description = description; }
     public void setStatut(Statut statut)                 { this.statut = statut; }
@@ -95,4 +99,5 @@ public class Projet {
     public void setDateDebut(LocalDate dateDebut)        { this.dateDebut = dateDebut; }
     public void setDateFin(LocalDate dateFin)            { this.dateFin = dateFin; }
     public void setEnqueteurs(Set<ProjetEnqueteur> e)    { this.enqueteurs = e; }
+    public void setMembres(Set<ProjetMembre> m)          { this.membres = m; }
 }

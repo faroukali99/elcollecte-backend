@@ -2,9 +2,18 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/elcollecte/infra/init-db.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-cartographie/src/main/resources/db/migration/V1__init_cartographie.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-collecte/src/main/resources/db/migration/V2__phase6_collecte_v2.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-mission/src/main/resources/db/migration/V1__init_missions.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/elcollecte/service-projet/src/main/resources/db/migration/V1__init_projets.sql" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/elcollecte/service-projet/src/main/resources/db/migration/V2__add_statuts_projet.sql" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/elcollecte/service-projet/src/main/resources/db/migration/V3__add_motif_rejet.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-projet/src/main/resources/db/migration/V4__phase2_evolution_projets.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-synchronisation/src/main/resources/db/migration/V1__init_synchronisation.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/service-utilisateur/src/main/resources/db/migration/V3__profils_permissions.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/service-utilisateur/src/main/resources/db/migration/V4__seed_profils_permissions_and_migrate_users.sql" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/src/main/resources/db/migration/V1__init_users.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/src/main/resources/db/migration/V3__profils_permissions.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/elcollecte/service-utilisateur/src/main/resources/db/migration/V4__seed_profils_permissions_and_migrate_users.sql" dialect="GenericSQL" />
   </component>
 </project>
