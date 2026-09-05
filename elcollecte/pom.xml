@@ -21,6 +21,9 @@
     <module>service-analytique</module>
     <module>service-rapport</module>
     <module>service-audit</module>
+    <module>service-mission</module>
+    <module>service-cartographie</module>
+    <module>service-synchronisation</module>
   </modules>
 
   <parent>
@@ -95,6 +98,13 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <release>17</release>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.42</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
     </plugins>

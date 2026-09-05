@@ -16,9 +16,12 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Dev origins (Vite default + CRA)
+        // Dev origins (Vite default + CRA + Admin/Chef/Enqueteur frontends)
         corsConfig.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:3002",
+                "http://localhost:3003",
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:80",
@@ -26,7 +29,9 @@ public class CorsConfig {
                 "http://192.168.56.1:5173",
                 "http://192.168.56.1:5174",
                 "http://192.168.56.1:80",
-                "http://192.168.56.1"
+                "http://192.168.56.1",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:5174"
         ));
 
         corsConfig.setMaxAge(3600L);

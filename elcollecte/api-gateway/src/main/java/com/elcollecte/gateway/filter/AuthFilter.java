@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -74,12 +75,22 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                         ? orgIdObj.toString()
                         : "1"; // fallback : orgId = 1 si absent
 
+                // Nouveaux claims dynamiques (profil + permissions). Conservés en
+                // plus de X-User-Role (legacy) pour ne rien casser côté services
+                // qui comparent encore la String de rôle brute.
+                @SuppressWarnings("unchecked")
+                List<String> permissions = claims.get("permissions", List.class);
+                String permissionsHeader = String.join(",",
+                        permissions != null ? permissions : Collections.emptyList());
+
                 ServerHttpRequest.Builder requestBuilder = exchange.getRequest()
                         .mutate()
-                        .header("X-User-Id",    claims.getSubject())
-                        .header("X-User-Role",  safeHeader(claims.get("role", String.class)))
-                        .header("X-User-Email", safeHeader(claims.get("email", String.class)))
-                        .header("X-Org-Id",     orgIdStr);
+                        .header("X-User-Id",          claims.getSubject())
+                        .header("X-User-Role",        safeHeader(claims.get("role", String.class)))
+                        .header("X-User-Profil",      safeHeader(claims.get("profil", String.class)))
+                        .header("X-User-Permissions", permissionsHeader)
+                        .header("X-User-Email",       safeHeader(claims.get("email", String.class)))
+                        .header("X-Org-Id",           orgIdStr);
 
                 return chain.filter(exchange.mutate().request(requestBuilder.build()).build());
 

@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -33,8 +36,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
 
         // Récupérer depuis l'API Gateway (header propagé)
-        String userId = request.getHeader("X-User-Id");
-        String role   = request.getHeader("X-User-Role");
+        String userId      = request.getHeader("X-User-Id");
+        String role        = request.getHeader("X-User-Role");
+        String permissions = request.getHeader("X-User-Permissions");
 
         if (userId != null && role != null
             && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -42,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             var auth = new UsernamePasswordAuthenticationToken(
                 userId,
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                buildAuthorities(role, permissions)
             );
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
@@ -54,11 +58,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             try {
                 Claims claims = jwtService.validateToken(token);
+                @SuppressWarnings("unchecked")
+                List<String> permissionCodes = claims.get("permissions", List.class);
                 var auth = new UsernamePasswordAuthenticationToken(
                     claims.getSubject(),
                     null,
-                    List.of(new SimpleGrantedAuthority(
-                        "ROLE_" + claims.get("role", String.class)))
+                    buildAuthorities(claims.get("role", String.class),
+                        permissionCodes != null ? String.join(",", permissionCodes) : null)
                 );
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
@@ -66,5 +72,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    /**
+     * Construit la liste combinée d'autorités : le rôle legacy (ROLE_xxx,
+     * conservé pour compat avec l'ancien code) + les permissions dynamiques
+     * du profil (PERM_xxx), à utiliser dans les nouveaux @PreAuthorize.
+     */
+    private List<GrantedAuthority> buildAuthorities(String role, String permissionsCsv) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (role != null && !role.isBlank()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+        }
+        if (permissionsCsv != null && !permissionsCsv.isBlank()) {
+            Arrays.stream(permissionsCsv.split(","))
+                .filter(p -> !p.isBlank())
+                .forEach(p -> authorities.add(new SimpleGrantedAuthority("PERM_" + p)));
+        }
+        return authorities;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class JwtService {
@@ -26,10 +27,23 @@ public class JwtService {
     }
 
     public String generateAccessToken(User user) {
+        // "role" (legacy) reste émis pour compatibilité descendante avec
+        // les services qui comparent encore cette String directement
+        // (ex: ProjetService.findAll, CollecteService.findAll). "profil" et
+        // "permissions" sont les nouveaux claims dynamiques à privilégier
+        // dans tout nouveau code d'autorisation.
+        List<String> permissionCodes = (user.getProfil() != null)
+            ? user.getProfil().getProfilPermissions().stream()
+                .map(pp -> pp.getPermission().getCode())
+                .toList()
+            : List.of();
+
         return Jwts.builder()
             .subject(String.valueOf(user.getId()))
-            .claim("email",  user.getEmail())
-            .claim("role",   user.getRole().name())
+            .claim("email",       user.getEmail())
+            .claim("role",        user.getRole().name())
+            .claim("profil",      user.getProfil() != null ? user.getProfil().getCode() : null)
+            .claim("permissions", permissionCodes)
             .claim("orgId",  user.getOrganisation() != null
                              ? user.getOrganisation().getId() : null)
             .issuedAt(new Date())

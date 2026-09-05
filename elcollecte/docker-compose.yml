@@ -123,6 +123,36 @@ services:
     depends_on:
       service-discovery: { condition: service_healthy }
 
+  service-mission:
+    build: ./service-mission
+    container_name: elcollecte-missions
+    ports: ["8091:8091"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_missions
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-cartographie:
+    build: ./service-cartographie
+    container_name: elcollecte-cartographie
+    ports: ["8092:8092"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_cartographie
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
+  service-synchronisation:
+    build: ./service-synchronisation
+    container_name: elcollecte-synchronisation
+    ports: ["8090:8090"]
+    environment:
+      <<: *common-env
+      DB_NAME: elcollecte_synchronisation
+    depends_on:
+      service-discovery: { condition: service_healthy }
+
   frontend:
     build: ./frontend
     container_name: elcollecte-frontend

@@ -47,11 +47,20 @@ public class SecurityConfig {
                                             FilterChain chain)
                     throws ServletException, IOException {
 
-                String userId = request.getHeader("X-User-Id");
-                String role   = request.getHeader("X-User-Role");
+                String userId      = request.getHeader("X-User-Id");
+                String role        = request.getHeader("X-User-Role");
+                String permissions = request.getHeader("X-User-Permissions");
 
                 if (userId != null && role != null) {
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                    if (permissions != null && !permissions.isBlank()) {
+                        for (String perm : permissions.split(",")) {
+                            if (!perm.isBlank()) {
+                                authorities.add(new SimpleGrantedAuthority("PERM_" + perm));
+                            }
+                        }
+                    }
                     var auth = new org.springframework.security.authentication
                             .UsernamePasswordAuthenticationToken(userId, null, authorities);
                     org.springframework.security.core.context.SecurityContextHolder

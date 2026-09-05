@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -106,5 +107,24 @@ public class RapportService {
         
         document.close();
         return baos.toByteArray();
+    }
+
+    public byte[] exportCsv(Long projetId, Long enqueteId, Long enqueteurId, 
+                            String dateDebut, String dateFin, String statut) {
+        // TODO: Implementer l'export CSV avec filtres
+        // Pour l'instant, retourne un CSV de placeholder
+        StringBuilder csv = new StringBuilder();
+        csv.append("ID,Projet,Enquete,Enqueteur,Statut,Date\n");
+        csv.append("1,Projet Test,Enquete Test,Enqueteur Test,VALIDE,2024-01-01\n");
+        return csv.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    public byte[] exportExcel(Long projetId, Long enqueteId, Long enqueteurId,
+                            String dateDebut, String dateFin, String statut) {
+        // TODO: Implementer l'export Excel avec filtres
+        // Pour l'instant, retourne un fichier Excel de placeholder
+        // En production, utiliser Apache POI
+        String excelContent = "Excel export - TODO: Implementer avec Apache POI";
+        return excelContent.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -21,6 +21,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Page<User> findAllByOrganisationIdAndRole(Long organisationId, User.Role role, Pageable pageable);
 
+    Page<User> findAllByOrganisationIdAndProfilId(Long organisationId, Long profilId, Pageable pageable);
+
+    Optional<User> findByIdAndOrganisationId(Long id, Long organisationId);
+
+    long countByProfilId(Long profilId);
+
     @Modifying
     @Query("UPDATE User u SET u.lastLogin = :now WHERE u.id = :id")
     void updateLastLogin(@Param("id") Long id, @Param("now") LocalDateTime now);

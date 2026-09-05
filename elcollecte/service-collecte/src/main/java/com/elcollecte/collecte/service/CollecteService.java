@@ -124,6 +124,75 @@ public class CollecteService {
         publishCollecteEvent("collecte.rejetee", c, validateurId);
     }
 
+    @Transactional(readOnly = true)
+    public CollecteDto findById(Long id, Long userId, String role) {
+        CollecteData c = collecteRepo.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Collecte introuvable: " + id));
+
+        if ("ENQUETEUR".equals(role) && !c.getEnqueteurId().equals(userId)) {
+            throw new NoSuchElementException("Accès non autorisé à cette collecte");
+        }
+
+        return CollecteDto.from(c);
+    }
+
+    @Transactional
+    public CollecteDto update(Long id, UpdateCollecteRequest request, Long userId) {
+        CollecteData c = collecteRepo.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Collecte introuvable: " + id));
+
+        if (!c.getEnqueteurId().equals(userId)) {
+            throw new NoSuchElementException("Accès non autorisé à cette collecte");
+        }
+
+        if (c.getStatut() != CollecteData.Statut.BROUILLON) {
+            throw new IllegalArgumentException("Seules les collectes en brouillon peuvent être modifiées");
+        }
+
+        c.setDonnees(request.donnees());
+        if (request.latitude() != null) {
+            c.setLatitude(BigDecimal.valueOf(request.latitude()));
+        }
+        if (request.longitude() != null) {
+            c.setLongitude(BigDecimal.valueOf(request.longitude()));
+        }
+
+        return CollecteDto.from(collecteRepo.save(c));
+    }
+
+    @Transactional
+    public void delete(Long id, Long userId) {
+        CollecteData c = collecteRepo.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Collecte introuvable: " + id));
+
+        if (!c.getEnqueteurId().equals(userId)) {
+            throw new NoSuchElementException("Accès non autorisé à cette collecte");
+        }
+
+        if (c.getStatut() != CollecteData.Statut.BROUILLON) {
+            throw new IllegalArgumentException("Seules les collectes en brouillon peuvent être supprimées");
+        }
+
+        collecteRepo.delete(c);
+    }
+
+    @Transactional
+    public void updateStatut(Long id, String statut, Long userId) {
+        CollecteData c = collecteRepo.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Collecte introuvable: " + id));
+
+        if (!c.getEnqueteurId().equals(userId)) {
+            throw new NoSuchElementException("Accès non autorisé à cette collecte");
+        }
+
+        try {
+            c.setStatut(CollecteData.Statut.valueOf(statut.toUpperCase()));
+            collecteRepo.save(c);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Statut invalide: " + statut);
+        }
+    }
+
     // ── Private ───────────────────────────────────────────────────────────────
     private void publishCollecteEvent(String topic, CollecteData c, Long userId) {
         Map<String, Object> event = new HashMap<>();

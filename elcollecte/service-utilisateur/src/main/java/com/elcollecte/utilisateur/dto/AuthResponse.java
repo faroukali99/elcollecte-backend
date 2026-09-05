@@ -1,5 +1,7 @@
 package com.elcollecte.utilisateur.dto;
 
+import java.util.List;
+
 public record AuthResponse(
     String token,
     String refreshToken,
@@ -16,7 +18,10 @@ public record AuthResponse(
         String nom,
         String prenom,
         String email,
-        String role,
+        String role,            // legacy — conservé pour compat frontend existant
+        String profil,          // code du profil dynamique (ex: "SUPERVISEUR")
+        String profilLibelle,   // libellé lisible du profil (ex: "Superviseur")
+        List<String> permissions,
         Long   organisationId
     ) {}
 }

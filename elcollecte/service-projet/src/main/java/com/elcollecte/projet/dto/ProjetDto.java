@@ -11,7 +11,7 @@ import java.util.Map;
 public record ProjetDto(
     Long                id,
     Long                organisationId,
-    Long                chefProjetId,
+    Long                responsableId,
     String              titre,
     String              description,
     String              statut,
@@ -20,13 +20,14 @@ public record ProjetDto(
     LocalDate           dateDebut,
     LocalDate           dateFin,
     LocalDateTime       createdAt,
-    int                 nbEnqueteurs
+    int                 nbEnqueteurs,
+    int                 nbMembres
 ) {
     public static ProjetDto from(Projet p) {
         return new ProjetDto(
             p.getId(),
             p.getOrganisationId(),
-            p.getChefProjetId(),
+            p.getResponsableId(),
             p.getTitre(),
             p.getDescription(),
             p.getStatut().name(),
@@ -35,7 +36,8 @@ public record ProjetDto(
             p.getDateDebut(),
             p.getDateFin(),
             p.getCreatedAt(),
-            (int) p.getEnqueteurs().stream().filter(e -> e.isActive()).count()
+            (int) p.getEnqueteurs().stream().filter(e -> e.isActive()).count(),
+            (int) p.getMembres().stream().filter(m -> m.isActive()).count()
         );
     }
 }
