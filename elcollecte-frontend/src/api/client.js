@@ -10,7 +10,10 @@ import axios from 'axios';
  * - File d'attente des requêtes pendant le refresh (évite les races conditions)
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Use relative "/api" by default so Vite dev server proxy (configured in vite.config.js)
+// can intercept requests and avoid CORS during development. If you need to point to a
+// full backend URL (e.g. in production), set VITE_API_URL in your environment.
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // DEBUG: Log the actual URL being used
 console.log('[DEBUG] BASE_URL:', BASE_URL);

@@ -4,7 +4,7 @@ x-common-env: &common-env
   EUREKA_HOST: service-discovery
   KAFKA_SERVERS: kafka:29092
   DB_HOST: postgres
-  DB_PASSWORD: postgres123
+  DB_PASSWORD: ${DB_PASSWORD:-2005}
   JWT_SECRET: ${JWT_SECRET:-elcollecte-super-secret-key-2025-change-in-production}
 
 services:
